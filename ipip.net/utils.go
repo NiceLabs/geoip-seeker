@@ -3,7 +3,6 @@ package ipip_net
 import (
 	"encoding/binary"
 	"net"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -36,15 +35,9 @@ func padding(data []byte, length int) []byte {
 	return payload
 }
 
-func resolvePublishDate(version string) time.Time {
-	var year, month, day, hour int64
-	year, _ = strconv.ParseInt(version[0:4], 10, 32)
-	month, _ = strconv.ParseInt(version[4:6], 10, 32)
-	day, _ = strconv.ParseInt(version[6:8], 10, 32)
-	if len(version) == 10 {
-		hour, _ = strconv.ParseInt(version[8:10], 10, 32)
-	}
-
-	location, _ := time.LoadLocation("Asia/Shanghai")
-	return time.Date(int(year), time.Month(month), int(day), int(hour), 0, 0, 0, location)
+func resolvePublishDate(version string) (date time.Time) {
+	layout := "2006010215"
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	date, _ = time.ParseInLocation(layout, version, loc)
+	return
 }
