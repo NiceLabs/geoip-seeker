@@ -23,7 +23,7 @@ import (
 
 func main() {
 	data, _ := ioutil.ReadFile(qqwry)
-	seeker := qqway.New(data)
+	seeker, _ := qqway.New(data)
 	location, _ := seeker.LookupByIP(net.ParseIP("103.57.164.0"))
 
 	fmt.Println("String()\t\t:", gbkToUTF8([]byte(location.String())))

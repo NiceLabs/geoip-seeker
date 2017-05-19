@@ -24,7 +24,10 @@ type IPSeeker struct {
 	endIP   uint32
 }
 
-func New(data []byte) *IPSeeker {
+func New(data []byte) (*IPSeeker, error) {
+	if len(data) == 0 {
+		return nil, errors.New("data is empty")
+	}
 	seeker := new(IPSeeker)
 	seeker.data = data
 
@@ -35,7 +38,7 @@ func New(data []byte) *IPSeeker {
 	seeker.beginIP, _ = seeker.locateIndex(0)
 	seeker.endIP, _ = seeker.locateIndex(seeker.indexCount)
 
-	return seeker
+	return seeker, nil
 }
 
 func (seeker *IPSeeker) LookupByIP(address net.IP) (*Location, error) {
@@ -64,7 +67,7 @@ func (seeker *IPSeeker) LookupByIP(address net.IP) (*Location, error) {
 		}
 	}
 
-	location, err := seeker.locateRecord(beginIndex)
+	location, err := seeker.LookupByIndex(beginIndex)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +79,7 @@ func (seeker *IPSeeker) LookupByIP(address net.IP) (*Location, error) {
 }
 
 func (seeker *IPSeeker) Version() string {
-	location, _ := seeker.locateRecord(seeker.indexCount)
+	location, _ := seeker.LookupByIndex(seeker.indexCount)
 	return location.Area
 }
 
@@ -94,7 +97,7 @@ func (seeker *IPSeeker) locateIndex(index int) (beginIP uint32, offset int) {
 	return
 }
 
-func (seeker *IPSeeker) locateRecord(index int) (*Location, error) {
+func (seeker *IPSeeker) LookupByIndex(index int) (*Location, error) {
 	if index > seeker.indexCount && index >= 0 {
 		return nil, errors.New("index out of range.")
 	}
@@ -106,6 +109,9 @@ func (seeker *IPSeeker) locateRecord(index int) (*Location, error) {
 	location.BeginIP = int2ip(beginIP)
 	location.EndIP = net.IP(seeker.data[offset : offset+4])
 
+	if location.Country == " CZ88.NET" {
+		location.Country = ""
+	}
 	if location.Area == " CZ88.NET" {
 		location.Area = ""
 	}
@@ -125,8 +131,8 @@ func (seeker *IPSeeker) readRecord(index int, onlyOne bool) (country, area strin
 		return
 	}
 	offset := index + 3
-	offset_record := int(binary.LittleEndian.Uint32(padding(seeker.data[index:offset], 4)))
-	country, area = seeker.readRecord(offset_record, true)
+	record := int(binary.LittleEndian.Uint32(padding(seeker.data[index:offset], 4)))
+	country, area = seeker.readRecord(record, true)
 	if !onlyOne && mode == redirectMode2 {
 		area, _ = seeker.readRecord(offset, true)
 	}
