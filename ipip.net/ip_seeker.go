@@ -51,12 +51,16 @@ func (seeker *IPSeeker) LookupByIP(address net.IP) (*Location, error) {
 		return nil, errors.New("invalid IPv4 address")
 	}
 
-	ip, record := seeker.locate(address)
-	return makeRecord(int2ip(ip), record)
+	location := makeLocation(seeker.locate(address))
+	location.IP = address
+	return location, nil
 }
 
 func (seeker *IPSeeker) PublishDate() time.Time {
-	location, _ := seeker.LookupByIP(net.IPv4bcast)
+	recordCount := seeker.RecordCount()
+	recordIndex := seeker.locateRecord(recordCount)
+	record := seeker.getRecord(recordIndex)
+	location := makeLocation(record)
 	return resolvePublishDate(location.Province)
 }
 
@@ -66,11 +70,11 @@ func (seeker *IPSeeker) RecordCount() int {
 	return (recordSpace / recordSize) - 1
 }
 
-func (seeker *IPSeeker) locate(address net.IP) (ip uint32, record string) {
+func (seeker *IPSeeker) locate(address net.IP) (record string) {
 	beginIndex := seeker.locateBeginIndex(address)
 	endIndex := seeker.locateEndIndex(address)
 
-	ip = ip2int(address)
+	ip := ip2int(address)
 	for beginIndex < endIndex {
 		middleIndex := (beginIndex + endIndex) / 2
 		middleIP := seeker.locateRecord(middleIndex)[:4]

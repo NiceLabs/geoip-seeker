@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-func makeRecord(address net.IP, data string) (*Location, error) {
-	location := &Location{IP: address}
+func makeLocation(data string) *Location {
+	location := new(Location)
 
 	mapping := []*string{
 		&location.Country, &location.Province, &location.City, &location.Unit,
@@ -23,13 +23,7 @@ func makeRecord(address net.IP, data string) (*Location, error) {
 		*mapping[index] = field
 	}
 
-	return location, nil
-}
-
-func int2ip(ip uint32) net.IP {
-	address := make(net.IP, 4)
-	binary.BigEndian.PutUint32(address, ip)
-	return address
+	return location
 }
 
 func ip2int(ip net.IP) uint32 {
