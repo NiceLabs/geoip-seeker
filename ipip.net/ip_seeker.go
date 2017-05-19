@@ -84,7 +84,7 @@ func (seeker *IPSeeker) LookupByIndex(index int) (location *Location, err error)
 		return
 	}
 	if index == 0 {
-		location.BeginIP = int2ip(0)
+		location.BeginIP = net.IPv4zero
 	} else {
 		location.BeginIP = int2ip(ip2int(seeker.locateRecord(index - 1)[:4]) + 1)
 	}
