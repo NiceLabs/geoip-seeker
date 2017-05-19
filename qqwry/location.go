@@ -14,11 +14,16 @@ type Location struct {
 }
 
 func (location *Location) String() string {
-	items := []string{
+	fields := []string{
 		location.BeginIP.String(),
 		location.EndIP.String(),
 		location.Country,
 		location.Area,
 	}
-	return strings.Join(items, "\t")
+	for index := range fields {
+		if fields[index] == "" {
+			fields[index] = "N/A"
+		}
+	}
+	return strings.Join(fields, "\t")
 }

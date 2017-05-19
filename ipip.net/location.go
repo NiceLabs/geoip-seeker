@@ -31,6 +31,11 @@ func (location *Location) StringDAT() string {
 		location.City,
 		location.Unit,
 	}
+	for index := range fields {
+		if fields[index] == "" {
+			fields[index] = "N/A"
+		}
+	}
 	return strings.Join(fields, "\t")
 }
 
@@ -49,6 +54,11 @@ func (location *Location) StringDATX() string {
 		location.CallingCode,
 		location.ISO3166Code,
 		location.ContinentCode,
+	}
+	for index := range fields {
+		if fields[index] == "" {
+			fields[index] = "N/A"
+		}
 	}
 	return strings.Join(fields, "\t")
 }
