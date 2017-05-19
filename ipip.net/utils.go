@@ -29,6 +29,12 @@ func makeLocation(data string) *Location {
 	return location
 }
 
+func int2ip(ip uint32) net.IP {
+	address := make(net.IP, 4)
+	binary.BigEndian.PutUint32(address, ip)
+	return address
+}
+
 func ip2int(ip net.IP) uint32 {
 	return binary.BigEndian.Uint32(ip.To4())
 }

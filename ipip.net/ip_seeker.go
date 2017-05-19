@@ -7,10 +7,6 @@ import (
 	"time"
 )
 
-const (
-	dataOffset = 4
-)
-
 type IPSeeker struct {
 	headerIndex []byte
 	recordIndex []byte
@@ -57,11 +53,11 @@ func (seeker *IPSeeker) init(data []byte, indexSpace, recordSize int) {
 	seeker.recordSize = recordSize
 	seeker.indexSpace = indexSpace
 
-	indexOffset := int(binary.BigEndian.Uint32(data[:dataOffset]))
+	indexOffset := int(binary.BigEndian.Uint32(data[:4]))
 
-	seeker.headerIndex = data[dataOffset:seeker.indexSpace]
-	seeker.recordIndex = data[dataOffset+seeker.indexSpace : indexOffset-indexSpace]
-	seeker.records = data[dataOffset+indexOffset:]
+	seeker.headerIndex = data[4:seeker.indexSpace]
+	seeker.recordIndex = data[4+seeker.indexSpace : indexOffset-indexSpace]
+	seeker.records = data[indexOffset-seeker.indexSpace:]
 }
 
 func (seeker *IPSeeker) LookupByIP(address net.IP) (location *Location, err error) {
@@ -101,7 +97,18 @@ func (seeker *IPSeeker) locate(address net.IP) *Location {
 			endIndex = middleIndex - 1
 		}
 	}
-	return seeker.getRecord(seeker.locateRecord(beginIndex))
+	record := seeker.locateRecord(beginIndex)
+	location := seeker.getRecord(record)
+	if location == nil {
+		return nil
+	}
+	if beginIndex == 0 {
+		location.BeginIP = int2ip(0)
+	} else {
+		location.BeginIP = int2ip(ip2int(seeker.locateRecord(beginIndex - 1)[:4]) + 1)
+	}
+	location.EndIP = record[:4]
+	return location
 }
 
 func (seeker *IPSeeker) locateRecord(index int) []byte {
@@ -117,6 +124,5 @@ func (seeker *IPSeeker) locateBeginIndex(address net.IP) int {
 func (seeker *IPSeeker) getRecord(record []byte) *Location {
 	offset := int(binary.LittleEndian.Uint32(padding(record[4:7], 4)))
 	length := seeker.getRecordLength(record)
-	offset -= seeker.indexSpace + dataOffset
 	return makeLocation(string(seeker.records[offset : offset+length]))
 }

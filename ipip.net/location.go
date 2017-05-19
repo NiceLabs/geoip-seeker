@@ -7,6 +7,8 @@ import (
 
 type Location struct {
 	IP            net.IP `json:"ip"`
+	BeginIP       net.IP `json:"begin_ip"`
+	EndIP         net.IP `json:"end_ip"`
 	Country       string `json:"country"`
 	Province      string `json:"province"`
 	City          string `json:"city"`
