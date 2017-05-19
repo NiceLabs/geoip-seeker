@@ -15,7 +15,7 @@ func init() {
 
 func BenchmarkIPSeeker_LookupByIP(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		seeker.LookupByIP(net.IP{114, 114, 114, 114})
+		seeker.LookupByIP(net.IP{103, 57, 164, 0})
 	}
 }
 
