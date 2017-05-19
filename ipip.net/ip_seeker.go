@@ -46,10 +46,12 @@ func (seeker *IPSeeker) init(data []byte, indexSpace, recordSize int) {
 }
 
 func (seeker *IPSeeker) LookupByIP(address net.IP) (*Location, error) {
-	if address.To4() == nil {
-		return nil, errors.New("invalid IP address")
+	address = address.To4()
+	if address == nil {
+		return nil, errors.New("invalid IPv4 address")
 	}
-	ip, record := seeker.locate(address.To4())
+
+	ip, record := seeker.locate(address)
 	return makeRecord(int2ip(ip), record)
 }
 

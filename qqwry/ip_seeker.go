@@ -39,9 +39,11 @@ func New(data []byte) *IPSeeker {
 }
 
 func (seeker *IPSeeker) LookupByIP(address net.IP) (*Location, error) {
+	address = address.To4()
 	if address == nil {
-		return nil, errors.New("invalid IP address")
+		return nil, errors.New("invalid IPv4 address")
 	}
+
 	ip := ip2int(address)
 	beginIndex := 0
 	endIndex := seeker.indexCount
