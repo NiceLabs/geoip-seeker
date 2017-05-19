@@ -72,6 +72,26 @@ func (seeker *IPSeeker) LookupByIP(address net.IP) (location *Location, err erro
 	return
 }
 
+func (seeker *IPSeeker) LookupByIndex(index int) (location *Location, err error) {
+	if index > seeker.RecordCount() && index >= 0 {
+		err = errors.New("index out of range.")
+		return
+	}
+
+	record := seeker.locateRecord(index)
+	location = seeker.getRecord(record)
+	if location == nil {
+		return
+	}
+	if index == 0 {
+		location.BeginIP = int2ip(0)
+	} else {
+		location.BeginIP = int2ip(ip2int(seeker.locateRecord(index - 1)[:4]) + 1)
+	}
+	location.EndIP = record[:4]
+	return
+}
+
 func (seeker *IPSeeker) PublishDate() time.Time {
 	recordCount := seeker.RecordCount()
 	recordIndex := seeker.locateRecord(recordCount)
@@ -97,17 +117,7 @@ func (seeker *IPSeeker) locate(address net.IP) *Location {
 			endIndex = middleIndex - 1
 		}
 	}
-	record := seeker.locateRecord(beginIndex)
-	location := seeker.getRecord(record)
-	if location == nil {
-		return nil
-	}
-	if beginIndex == 0 {
-		location.BeginIP = int2ip(0)
-	} else {
-		location.BeginIP = int2ip(ip2int(seeker.locateRecord(beginIndex - 1)[:4]) + 1)
-	}
-	location.EndIP = record[:4]
+	location, _ := seeker.LookupByIndex(beginIndex)
 	return location
 }
 
