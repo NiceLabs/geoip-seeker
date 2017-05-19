@@ -71,7 +71,7 @@ func (seeker *IPSeeker) LookupByIP(address net.IP) (location *Location, err erro
 		return
 	}
 
-	location = makeLocation(seeker.locate(address))
+	location = seeker.locate(address)
 	location.IP = address
 	return
 }
@@ -79,8 +79,7 @@ func (seeker *IPSeeker) LookupByIP(address net.IP) (location *Location, err erro
 func (seeker *IPSeeker) PublishDate() time.Time {
 	recordCount := seeker.RecordCount()
 	recordIndex := seeker.locateRecord(recordCount)
-	record := seeker.getRecord(recordIndex)
-	location := makeLocation(record)
+	location := seeker.getRecord(recordIndex)
 	return resolvePublishDate(location.Province)
 }
 
@@ -88,7 +87,7 @@ func (seeker *IPSeeker) RecordCount() int {
 	return (len(seeker.recordIndex) / seeker.recordSize) - 1
 }
 
-func (seeker *IPSeeker) locate(address net.IP) string {
+func (seeker *IPSeeker) locate(address net.IP) *Location {
 	beginIndex := seeker.locateBeginIndex(address)
 	endIndex := seeker.RecordCount()
 
@@ -115,9 +114,9 @@ func (seeker *IPSeeker) locateBeginIndex(address net.IP) int {
 	return int(binary.LittleEndian.Uint32(seeker.headerIndex[offset : offset+4]))
 }
 
-func (seeker *IPSeeker) getRecord(record []byte) string {
+func (seeker *IPSeeker) getRecord(record []byte) *Location {
 	offset := int(binary.LittleEndian.Uint32(padding(record[4:7], 4)))
 	length := seeker.getRecordLength(record)
 	offset -= seeker.indexSpace + dataOffset
-	return string(seeker.records[offset : offset+length])
+	return makeLocation(string(seeker.records[offset : offset+length]))
 }
