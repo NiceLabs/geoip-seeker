@@ -20,7 +20,7 @@ import (
 
 func main() {
 	data, _ := ioutil.ReadFile("./17monipdb.datx")
-	seeker := ipip_net.NewDATX(data)
+	seeker, _ := ipip_net.NewDATX(data)
 	location, _ := seeker.LookupByIP(net.ParseIP("103.57.164.0"))
 
 	fmt.Println("String()\t\t:", location.String())

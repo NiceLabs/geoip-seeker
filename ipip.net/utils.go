@@ -8,6 +8,10 @@ import (
 )
 
 func makeLocation(data string) *Location {
+	if len(data) == 0 {
+		return nil
+	}
+
 	location := new(Location)
 
 	mapping := []*string{
