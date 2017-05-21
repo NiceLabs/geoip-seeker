@@ -12,7 +12,6 @@ type IPSeeker struct {
 	recordIndex []byte
 	records     []byte
 
-	indexSpace int
 	recordSize int
 
 	locateRecordOffset func(address net.IP) int
@@ -51,13 +50,12 @@ func NewDATX(data []byte) (*IPSeeker, error) {
 
 func (seeker *IPSeeker) init(data []byte, indexSpace, recordSize int) {
 	seeker.recordSize = recordSize
-	seeker.indexSpace = indexSpace
 
 	indexOffset := int(binary.BigEndian.Uint32(data[:4]))
 
-	seeker.headerIndex = data[4:seeker.indexSpace]
-	seeker.recordIndex = data[4+seeker.indexSpace : indexOffset-indexSpace]
-	seeker.records = data[indexOffset-seeker.indexSpace:]
+	seeker.headerIndex = data[4:indexSpace]
+	seeker.recordIndex = data[4+indexSpace : indexOffset-indexSpace]
+	seeker.records = data[indexOffset-indexSpace:]
 }
 
 func (seeker *IPSeeker) LookupByIP(address net.IP) (location *Location, err error) {
