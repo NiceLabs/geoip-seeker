@@ -14,8 +14,8 @@ type IPSeeker struct {
 
 	recordSize int
 
-	locateRecordOffset func(address net.IP) int
-	getRecordLength    func(record []byte) int
+	locateRecordIndex func(address net.IP) int
+	getRecordLength   func(record []byte) int
 }
 
 func NewDAT(data []byte) (*IPSeeker, error) {
@@ -24,8 +24,8 @@ func NewDAT(data []byte) (*IPSeeker, error) {
 	}
 	seeker := new(IPSeeker)
 	seeker.init(data, 0x400, 8)
-	seeker.locateRecordOffset = func(address net.IP) int {
-		return int(address[0]) * 0x4
+	seeker.locateRecordIndex = func(address net.IP) int {
+		return int(address[0])
 	}
 	seeker.getRecordLength = func(record []byte) int {
 		return int(record[7])
@@ -39,8 +39,8 @@ func NewDATX(data []byte) (*IPSeeker, error) {
 	}
 	seeker := new(IPSeeker)
 	seeker.init(data, 0x40000, 9)
-	seeker.locateRecordOffset = func(address net.IP) int {
-		return (int(address[0])*0x100 + int(address[1])) * 0x4
+	seeker.locateRecordIndex = func(address net.IP) int {
+		return int(binary.BigEndian.Uint16(address[:2]))
 	}
 	seeker.getRecordLength = func(record []byte) int {
 		return int(binary.BigEndian.Uint16(record[7:9]))
@@ -125,7 +125,7 @@ func (seeker *IPSeeker) locateRecord(index int) []byte {
 }
 
 func (seeker *IPSeeker) locateBeginIndex(address net.IP) int {
-	offset := seeker.locateRecordOffset(address)
+	offset := seeker.locateRecordIndex(address) * 4
 	return int(binary.LittleEndian.Uint32(seeker.headerIndex[offset : offset+4]))
 }
 
