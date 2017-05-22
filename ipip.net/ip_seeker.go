@@ -109,7 +109,7 @@ func (seeker *IPSeeker) locate(address net.IP) *Location {
 	for beginIndex <= endIndex {
 		middleIndex := (beginIndex + endIndex) / 2
 		middleIP := seeker.locateRecord(middleIndex)[:4]
-		if ip2int(middleIP) <= ip {
+		if ip2int(middleIP) < ip {
 			beginIndex = middleIndex + 1
 		} else {
 			endIndex = middleIndex - 1
