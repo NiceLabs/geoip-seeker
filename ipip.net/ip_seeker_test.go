@@ -10,7 +10,7 @@ var seeker *IPSeeker
 
 func init() {
 	data, _ := ioutil.ReadFile("../../assets/data/17monipdb.dat")
-	seeker, _ = NewDAT(data)
+	seeker, _ = New(data, ModeDAT)
 }
 
 func BenchmarkIPSeeker_LookupByIP(b *testing.B) {

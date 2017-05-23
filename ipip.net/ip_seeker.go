@@ -7,6 +7,18 @@ import (
 	"time"
 )
 
+const (
+	ModeDAT  Mode = 0
+	ModeDATX Mode = 1
+
+	datIndexSpace  = 0x400
+	datRecordSize  = 8
+	datxIndexSpace = 0x40000
+	datxRecordSize = 9
+)
+
+type Mode int
+
 type IPSeeker struct {
 	headerIndex []byte
 	recordIndex []byte
@@ -18,32 +30,30 @@ type IPSeeker struct {
 	getRecordLength   func(record []byte) int
 }
 
-func NewDAT(data []byte) (*IPSeeker, error) {
+func New(data []byte, mode Mode) (*IPSeeker, error) {
 	if len(data) == 0 {
 		return nil, errors.New("data is empty")
 	}
 	seeker := new(IPSeeker)
-	seeker.init(data, 0x400, 8)
-	seeker.locateRecordIndex = func(address net.IP) int {
-		return int(address[0])
-	}
-	seeker.getRecordLength = func(record []byte) int {
-		return int(record[7])
-	}
-	return seeker, nil
-}
-
-func NewDATX(data []byte) (*IPSeeker, error) {
-	if len(data) == 0 {
-		return nil, errors.New("data is empty")
-	}
-	seeker := new(IPSeeker)
-	seeker.init(data, 0x40000, 9)
-	seeker.locateRecordIndex = func(address net.IP) int {
-		return int(binary.BigEndian.Uint16(address[:2]))
-	}
-	seeker.getRecordLength = func(record []byte) int {
-		return int(binary.BigEndian.Uint16(record[7:9]))
+	switch mode {
+	case ModeDAT:
+		seeker.init(data, datIndexSpace, datRecordSize)
+		seeker.locateRecordIndex = func(address net.IP) int {
+			return int(address[0])
+		}
+		seeker.getRecordLength = func(record []byte) int {
+			return int(record[7])
+		}
+	case ModeDATX:
+		seeker.init(data, datxIndexSpace, datxRecordSize)
+		seeker.locateRecordIndex = func(address net.IP) int {
+			return int(binary.BigEndian.Uint16(address[:2]))
+		}
+		seeker.getRecordLength = func(record []byte) int {
+			return int(binary.BigEndian.Uint16(record[7:9]))
+		}
+	default:
+		return nil, errors.New("mode error")
 	}
 	return seeker, nil
 }
@@ -53,7 +63,7 @@ func (seeker *IPSeeker) init(data []byte, indexSpace, recordSize int) {
 
 	indexOffset := int(binary.BigEndian.Uint32(data[:4]))
 
-	seeker.headerIndex = data[4:indexSpace]
+	seeker.headerIndex = data[4 : 4+indexSpace]
 	seeker.recordIndex = data[4+indexSpace : indexOffset-indexSpace]
 	seeker.records = data[indexOffset-indexSpace:]
 }
