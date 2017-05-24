@@ -64,7 +64,7 @@ func (seeker *IPSeeker) init(data []byte, indexSpace, recordSize int) {
 	indexOffset := int(binary.BigEndian.Uint32(data[:4]))
 
 	seeker.headerIndex = data[4 : 4+indexSpace]
-	seeker.recordIndex = data[4+indexSpace : indexOffset-indexSpace]
+	seeker.recordIndex = data[4+indexSpace : 4+indexOffset-indexSpace]
 	seeker.records = data[indexOffset-indexSpace:]
 }
 
