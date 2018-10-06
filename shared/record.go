@@ -6,29 +6,41 @@ import (
 )
 
 type Record struct {
-	IP             net.IP `json:"ip,omitempty"`
-	BeginIP        net.IP `json:"begin_ip,omitempty"`
-	EndIP          net.IP `json:"end_ip,omitempty"`
-	CountryName    string `json:"country_name,omitempty"`
-	RegionName     string `json:"region_name,omitempty"`
-	CityName       string `json:"city_name,omitempty"`
-	OwnerDomain    string `json:"owner_domain,omitempty"`
-	ISPDomain      string `json:"isp_domain,omitempty"`
-	Latitude       string `json:"latitude,omitempty"`
-	Longitude      string `json:"longitude,omitempty"`
-	TimeZone       string `json:"time_zone,omitempty"`
-	UTCOffset      string `json:"utc_offset,omitempty"`
-	ChinaAdminCode string `json:"china_admin_code,omitempty"`
-	IDDCode        string `json:"idd_code,omitempty"`
-	CountryCode    string `json:"country_code,omitempty"`
-	ContinentCode  string `json:"continent_code,omitempty"`
-	IDC            string `json:"idc,omitempty"`
-	BaseStation    string `json:"base_station,omitempty"`
-	CountryCode3   string `json:"country_code_3,omitempty"`
-	EuropeanUnion  string `json:"european_union,omitempty"`
-	CurrencyCode   string `json:"currency_code,omitempty"`
-	CurrencyName   string `json:"currency_name,omitempty"`
-	AnyCast        string `json:"anycast,omitempty"`
+	// IP
+	IP      net.IP `json:",omitempty"`
+	BeginIP net.IP `json:",omitempty"`
+	EndIP   net.IP `json:",omitempty"`
+	// GeoInfo
+	CountryName string `json:",omitempty"`
+	RegionName  string `json:",omitempty"`
+	CityName    string `json:",omitempty"`
+	// Owner
+	OwnerDomain string `json:",omitempty"`
+	ISPDomain   string `json:",omitempty"`
+	// Geocoding
+	Latitude  string `json:",omitempty"`
+	Longitude string `json:",omitempty"`
+	// Time zone
+	TimeZone  string `json:",omitempty"`
+	UTCOffset string `json:",omitempty"`
+	// Country Code
+	//   IDDCode = International Direct Dialing
+	//   GB2260Code = GB/T 2260
+	//   ISO3166Alpha2Code = ISO 3166-1 alpha-2
+	//   ISO3166Alpha3Code = ISO 3166-1 alpha-3
+	IDDCode           string `json:",omitempty"`
+	GB2260Code        string `json:",omitempty"`
+	ISO3166Alpha2Code string `json:",omitempty"`
+	ISO3166Alpha3Code string `json:",omitempty"`
+	ContinentCode     string `json:",omitempty"`
+	// Service
+	IDC           string `json:",omitempty"`
+	BaseStation   string `json:",omitempty"`
+	EuropeanUnion string `json:",omitempty"`
+	CurrencyCode  string `json:",omitempty"`
+	CurrencyName  string `json:",omitempty"`
+	// BGP
+	AnyCast string `json:",omitempty"`
 }
 
 func (record *Record) String() string {
@@ -36,9 +48,9 @@ func (record *Record) String() string {
 		record.CountryName, record.RegionName, record.CityName,
 		record.OwnerDomain, record.ISPDomain, record.Longitude,
 		record.Latitude, record.TimeZone, record.UTCOffset,
-		record.ChinaAdminCode, record.IDDCode, record.CountryCode,
+		record.GB2260Code, record.IDDCode, record.ISO3166Alpha2Code,
 		record.ContinentCode, record.IDC, record.BaseStation,
-		record.CountryCode3, record.EuropeanUnion, record.CurrencyCode,
+		record.ISO3166Alpha3Code, record.EuropeanUnion, record.CurrencyCode,
 		record.CurrencyName, record.AnyCast,
 	}
 	for index := range fields {

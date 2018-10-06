@@ -32,11 +32,11 @@ func main() {
 	// 2018-07-02 01:00:00 +0800 CST
 	fmt.Println(string(encodedRecord))
 	// {
-	//   "ip": "114.114.114.114",
-	//   "begin_ip": "114.114.112.0",
-	//   "end_ip": "114.114.119.255",
-	//   "country_name": "114DNS.COM",
-	//   "region_name": "114DNS.COM"
+	//   "IP": "114.114.114.114",
+	//   "BeginIP": "114.114.112.0",
+	//   "EndIP": "114.114.119.255",
+	//   "CountryName": "114DNS.COM",
+	//   "RegionName": "114DNS.COM"
 	// }
 }
 ```

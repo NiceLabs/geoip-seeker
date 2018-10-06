@@ -39,11 +39,11 @@ func main() {
 	// 2018-10-05 00:00:00 +0800 CST
 	fmt.Println(string(encodedRecord))
 	// {
-	//   "ip": "114.114.114.114",
-	//   "begin_ip": "114.114.114.114",
-	//   "end_ip": "114.114.114.114",
-	//   "country_name": "江苏省南京市",
-	//   "region_name": "南京信风网络科技有限公司GreatbitDNS服务器"
+	//   "IP": "114.114.114.114",
+	//   "BeginIP": "114.114.114.114",
+	//   "EndIP": "114.114.114.114",
+	//   "CountryName": "江苏省南京市",
+	//   "RegionName": "南京信风网络科技有限公司GreatbitDNS服务器"
 	// }
 }
 

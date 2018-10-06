@@ -34,9 +34,9 @@ func main() {
 	// [CN]
 	fmt.Println(string(encodedRecord))
 	// {
-	//   "ip": "114.114.114.114",
-	//   "country_name": "114DNS.COM",
-	//   "region_name": "114DNS.COM"
+	//   "IP": "114.114.114.114",
+	//   "CountryName": "114DNS.COM",
+	//   "RegionName": "114DNS.COM"
 	// }
 }
 ```

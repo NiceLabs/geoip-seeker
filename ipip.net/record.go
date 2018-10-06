@@ -17,9 +17,9 @@ func makeRecord(data string) *shared.Record {
 		&record.CountryName, &record.RegionName, &record.CityName,
 		&record.OwnerDomain, &record.ISPDomain, &record.Longitude,
 		&record.Latitude, &record.TimeZone, &record.UTCOffset,
-		&record.ChinaAdminCode, &record.IDDCode, &record.CountryCode,
+		&record.GB2260Code, &record.IDDCode, &record.ISO3166Alpha2Code,
 		&record.ContinentCode, &record.IDC, &record.BaseStation,
-		&record.CountryCode3, &record.EuropeanUnion, &record.CurrencyCode,
+		&record.ISO3166Alpha3Code, &record.EuropeanUnion, &record.CurrencyCode,
 		&record.CurrencyName, &record.AnyCast,
 	}
 
