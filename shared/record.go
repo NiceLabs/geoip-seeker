@@ -5,11 +5,10 @@ import (
 	"strings"
 )
 
-type Location struct {
-	IP      net.IP `json:"ip,omitempty"`
-	BeginIP net.IP `json:"begin_ip,omitempty"`
-	EndIP   net.IP `json:"end_ip,omitempty"`
-
+type Record struct {
+	IP             net.IP `json:"ip,omitempty"`
+	BeginIP        net.IP `json:"begin_ip,omitempty"`
+	EndIP          net.IP `json:"end_ip,omitempty"`
 	CountryName    string `json:"country_name,omitempty"`
 	RegionName     string `json:"region_name,omitempty"`
 	CityName       string `json:"city_name,omitempty"`
@@ -32,15 +31,15 @@ type Location struct {
 	AnyCast        string `json:"anycast,omitempty"`
 }
 
-func (location *Location) String() string {
+func (record *Record) String() string {
 	fields := []string{
-		location.CountryName, location.RegionName, location.CityName,
-		location.OwnerDomain, location.ISPDomain, location.Longitude,
-		location.Latitude, location.TimeZone, location.UTCOffset,
-		location.ChinaAdminCode, location.IDDCode, location.CountryCode,
-		location.ContinentCode, location.IDC, location.BaseStation,
-		location.CountryCode3, location.EuropeanUnion, location.CurrencyCode,
-		location.CurrencyName, location.AnyCast,
+		record.CountryName, record.RegionName, record.CityName,
+		record.OwnerDomain, record.ISPDomain, record.Longitude,
+		record.Latitude, record.TimeZone, record.UTCOffset,
+		record.ChinaAdminCode, record.IDDCode, record.CountryCode,
+		record.ContinentCode, record.IDC, record.BaseStation,
+		record.CountryCode3, record.EuropeanUnion, record.CurrencyCode,
+		record.CurrencyName, record.AnyCast,
 	}
 	for index := range fields {
 		if fields[index] == "" {

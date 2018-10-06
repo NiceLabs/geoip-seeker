@@ -6,7 +6,7 @@ import (
 )
 
 type IPSeeker interface {
-	LookupByIP(address net.IP) (*Location, error)
+	LookupByIP(address net.IP) (*Record, error)
 	IPv4Support() bool
 	IPv6Support() bool
 	RecordCount() uint64

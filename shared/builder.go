@@ -1,7 +1,8 @@
 package shared
 
-type Builder interface {
-	AddLocation(location *Location)
+import "io"
 
-	Export() []byte
+type Builder interface {
+	AddRecord(location *Record)
+	io.WriterTo
 }

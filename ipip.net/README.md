@@ -22,14 +22,26 @@ import (
 func main() {
 	data, _ := ioutil.ReadFile("testdata/17monipdb.datx")
 	seeker, _ := ipip_net.New(data, ipip_net.ModeDATX)
-	location, _ := seeker.LookupByIP(net.ParseIP("103.57.164.0"))
+	record, _ := seeker.LookupByIP(net.ParseIP("114.114.114.114"))
 
-	encoded, _ := json.MarshalIndent(location, "", "  ")
+	encodedRecord, _ := json.MarshalIndent(record, "", "  ")
 
-	fmt.Println(string(encoded))
+	fmt.Println(seeker.RecordCount())
+	// 251008
+	fmt.Println(seeker.BuildTime())
+	// 2018-07-02 01:00:00 +0800 CST
+	fmt.Println(string(encodedRecord))
+	// {
+	//   "ip": "114.114.114.114",
+	//   "begin_ip": "114.114.112.0",
+	//   "end_ip": "114.114.119.255",
+	//   "country_name": "114DNS.COM",
+	//   "region_name": "114DNS.COM"
+	// }
 }
 ```
 
 # References
 
 see https://ipip.net
+see https://github.com/Moowei/ip-seeker

@@ -46,7 +46,7 @@ func New(data []byte) (seeker *IPSeeker, err error) {
 	return
 }
 
-func (seeker *IPSeeker) LookupByIP(address net.IP) (location *shared.Location, err error) {
+func (seeker *IPSeeker) LookupByIP(address net.IP) (record *shared.Record, err error) {
 	address = address.To4()
 	if address == nil {
 		err = shared.ErrInvalidIPv4
@@ -74,38 +74,38 @@ func (seeker *IPSeeker) LookupByIP(address net.IP) (location *shared.Location, e
 		}
 	}
 
-	location, err = seeker.LookupByIndex(beginIndex)
+	record, err = seeker.LookupByIndex(beginIndex)
 	if err != nil {
 		return
 	}
-	if ip2int(location.BeginIP) > ip {
+	if ip2int(record.BeginIP) > ip {
 		err = shared.ErrDataNotExists
 		return
 	}
-	location.IP = address
+	record.IP = address
 	return
 }
 
-func (seeker *IPSeeker) LookupByIndex(index int) (*shared.Location, error) {
+func (seeker *IPSeeker) LookupByIndex(index int) (*shared.Record, error) {
 	if index > seeker.indexCount && index >= 0 {
 		return nil, errors.New("index out of range")
 	}
 
 	beginIP, offset := seeker.locateIndex(index)
 
-	location := new(shared.Location)
-	location.CountryName, location.RegionName = seeker.readRecord(offset+4, false)
-	location.BeginIP = int2ip(beginIP)
-	location.EndIP = net.IP(seeker.data[offset : offset+4])
+	record := new(shared.Record)
+	record.CountryName, record.RegionName = seeker.readRecord(offset+4, false)
+	record.BeginIP = int2ip(beginIP)
+	record.EndIP = net.IP(seeker.data[offset : offset+4])
 
-	if location.CountryName == " CZ88.NET" {
-		location.CountryName = ""
+	if record.CountryName == " CZ88.NET" {
+		record.CountryName = ""
 	}
-	if location.RegionName == " CZ88.NET" {
-		location.RegionName = ""
+	if record.RegionName == " CZ88.NET" {
+		record.RegionName = ""
 	}
 
-	return location, nil
+	return record, nil
 }
 
 func (seeker *IPSeeker) IPv4Support() bool {
@@ -117,21 +117,21 @@ func (seeker *IPSeeker) IPv6Support() bool {
 }
 
 func (seeker *IPSeeker) BuildTime() time.Time {
-	location, _ := seeker.LookupByIndex(seeker.indexCount)
+	record, _ := seeker.LookupByIndex(seeker.indexCount)
 
 	formats := []string{
 		"%d\xc4\xea%d\xd4\xc2%d\xc8\xd5",
 		"%d年%d月%d日",
 		"%4d%2d%2d",
 	}
-	zone := time.FixedZone("CST", +8*3600)
+	location := time.FixedZone("CST", +8*3600)
 	for _, format := range formats {
 		var year, month, day int
-		_, err := fmt.Sscanf(location.RegionName, format, &year, &month, &day)
+		_, err := fmt.Sscanf(record.RegionName, format, &year, &month, &day)
 		if err != nil {
 			continue
 		}
-		return time.Date(year, time.Month(month), day, 0, 0, 0, 0, zone)
+		return time.Date(year, time.Month(month), day, 0, 0, 0, 0, location)
 	}
 	return time.Unix(0, 0)
 }

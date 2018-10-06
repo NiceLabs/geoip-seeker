@@ -33,14 +33,14 @@ func New(data []byte) (seeker *IPSeeker, err error) {
 	return seeker, nil
 }
 
-func (seeker *IPSeeker) LookupByIP(address net.IP) (location *shared.Location, err error) {
+func (seeker *IPSeeker) LookupByIP(address net.IP) (record *shared.Record, err error) {
 	node, err := seeker.findNode(address)
 	if err != nil {
 		return
 	}
-	record, err := seeker.resolveNode(node)
-	location = makeLocation(string(record), seeker.language, seeker.meta.Fields)
-	location.IP = address
+	data, err := seeker.resolveNode(node)
+	record = makeRecord(string(data), seeker.language, seeker.meta.Fields)
+	record.IP = address
 	return
 }
 

@@ -27,16 +27,27 @@ func main() {
 	data, _ := ioutil.ReadFile("testdata/qqwry.dat")
 	seeker, _ := qqwry.New(data)
 
-	location, _ := seeker.LookupByIP(net.ParseIP("103.57.164.0"))
-	location.CountryName = convertGBKToUTF8(location.CountryName)
-	location.RegionName = convertGBKToUTF8(location.RegionName)
+	record, _ := seeker.LookupByIP(net.ParseIP("114.114.114.114"))
+	record.CountryName = gbkToUTF8(record.CountryName)
+	record.RegionName = gbkToUTF8(record.RegionName)
 
-	encoded, _ := json.MarshalIndent(location, "", "  ")
+	encodedRecord, _ := json.MarshalIndent(record, "", "  ")
 
-	fmt.Println(string(encoded))
+	fmt.Println(seeker.RecordCount())
+	// 470237
+	fmt.Println(seeker.BuildTime())
+	// 2018-10-05 00:00:00 +0800 CST
+	fmt.Println(string(encodedRecord))
+	// {
+	//   "ip": "114.114.114.114",
+	//   "begin_ip": "114.114.114.114",
+	//   "end_ip": "114.114.114.114",
+	//   "country_name": "江苏省南京市",
+	//   "region_name": "南京信风网络科技有限公司GreatbitDNS服务器"
+	// }
 }
 
-func convertGBKToUTF8(value string) string {
+func gbkToUTF8(value string) string {
 	reader := transform.NewReader(
 		strings.NewReader(value),
 		simplifiedchinese.GBK.NewDecoder(),
@@ -48,4 +59,5 @@ func convertGBKToUTF8(value string) string {
 
 # References
 
+see https://web.archive.org/web/20140423114336/http://lumaqq.linuxsir.org/article/qqwry_format_detail.html
 see http://sewm.pku.edu.cn/src/other/qqwry/qqwry_format_detail.pdf

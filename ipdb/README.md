@@ -22,11 +22,22 @@ import (
 func main() {
 	data, _ := ioutil.ReadFile("testdata/ipiptest.ipdb")
 	seeker, _ := ipdb.New(data)
-	location, _ := seeker.LookupByIP(net.ParseIP("103.57.164.0"))
+	record, _ := seeker.LookupByIP(net.ParseIP("114.114.114.114"))
 
-	encoded, _ := json.MarshalIndent(location, "", "  ")
+	encodedRecord, _ := json.MarshalIndent(record, "", "  ")
 
-	fmt.Println(string(encoded))
+	fmt.Println(seeker.RecordCount())
+	// 385083
+	fmt.Println(seeker.BuildTime())
+	// 2018-08-31 14:17:20 +0800 CST
+	fmt.Println(seeker.LanguageNames())
+	// [CN]
+	fmt.Println(string(encodedRecord))
+	// {
+	//   "ip": "114.114.114.114",
+	//   "country_name": "114DNS.COM",
+	//   "region_name": "114DNS.COM"
+	// }
 }
 ```
 
