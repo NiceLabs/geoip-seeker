@@ -32,4 +32,4 @@ func main() {
 
 # References
 
-see http://sewm.pku.edu.cn/src/other/qqwry/qqwry_format_detail.pdf
+see https://ipip.net
