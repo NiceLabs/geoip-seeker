@@ -2,9 +2,10 @@ package ipip_net
 
 import (
 	"encoding/binary"
-	"errors"
 	"net"
 	"time"
+
+	"github.com/NiceLabs/geoip-seeker/shared"
 )
 
 const (
@@ -30,11 +31,12 @@ type IPSeeker struct {
 	getRecordLength   func(record []byte) int
 }
 
-func New(data []byte, mode Mode) (*IPSeeker, error) {
+func New(data []byte, mode Mode) (seeker *IPSeeker, err error) {
 	if len(data) == 0 {
-		return nil, errors.New("data is empty")
+		err = shared.ErrFileSize
+		return
 	}
-	seeker := new(IPSeeker)
+	seeker = new(IPSeeker)
 	switch mode {
 	case ModeDAT:
 		seeker.init(data, datIndexSpace, datRecordSize)
@@ -53,9 +55,9 @@ func New(data []byte, mode Mode) (*IPSeeker, error) {
 			return int(binary.BigEndian.Uint16(record[7:9]))
 		}
 	default:
-		return nil, errors.New("mode error")
+		err = shared.ErrModeError
 	}
-	return seeker, nil
+	return
 }
 
 func (seeker *IPSeeker) init(data []byte, indexSpace, recordSize int) {
@@ -68,10 +70,10 @@ func (seeker *IPSeeker) init(data []byte, indexSpace, recordSize int) {
 	seeker.records = data[indexOffset-indexSpace:]
 }
 
-func (seeker *IPSeeker) LookupByIP(address net.IP) (location *Location, err error) {
+func (seeker *IPSeeker) LookupByIP(address net.IP) (location *shared.Location, err error) {
 	address = address.To4()
 	if address == nil {
-		err = errors.New("invalid IPv4 address")
+		err = shared.ErrInvalidIPv4
 		return
 	}
 
@@ -80,9 +82,9 @@ func (seeker *IPSeeker) LookupByIP(address net.IP) (location *Location, err erro
 	return
 }
 
-func (seeker *IPSeeker) LookupByIndex(index int) (location *Location, err error) {
-	if index > seeker.RecordCount() && index >= 0 {
-		err = errors.New("index out of range.")
+func (seeker *IPSeeker) LookupByIndex(index int) (location *shared.Location, err error) {
+	if index > int(seeker.RecordCount()) && index >= 0 {
+		err = shared.ErrIndexOutOfRange
 		return
 	}
 
@@ -100,20 +102,28 @@ func (seeker *IPSeeker) LookupByIndex(index int) (location *Location, err error)
 	return
 }
 
-func (seeker *IPSeeker) PublishDate() time.Time {
-	recordCount := seeker.RecordCount()
+func (seeker *IPSeeker) IPv4Support() bool {
+	return true
+}
+
+func (seeker *IPSeeker) IPv6Support() bool {
+	return false
+}
+
+func (seeker *IPSeeker) BuildTime() time.Time {
+	recordCount := int(seeker.RecordCount())
 	recordIndex := seeker.locateRecord(recordCount)
 	location := seeker.getRecord(recordIndex)
-	return resolvePublishDate(location.Province)
+	return resolvePublishDate(location.RegionName)
 }
 
-func (seeker *IPSeeker) RecordCount() int {
-	return (len(seeker.recordIndex) / seeker.recordSize) - 1
+func (seeker *IPSeeker) RecordCount() uint64 {
+	return uint64(len(seeker.recordIndex)/seeker.recordSize) - 1
 }
 
-func (seeker *IPSeeker) locate(address net.IP) *Location {
+func (seeker *IPSeeker) locate(address net.IP) *shared.Location {
 	beginIndex := seeker.locateBeginIndex(address)
-	endIndex := seeker.RecordCount()
+	endIndex := int(seeker.RecordCount())
 
 	ip := ip2int(address)
 	for beginIndex <= endIndex {
@@ -139,7 +149,7 @@ func (seeker *IPSeeker) locateBeginIndex(address net.IP) int {
 	return int(binary.LittleEndian.Uint32(seeker.headerIndex[offset : offset+4]))
 }
 
-func (seeker *IPSeeker) getRecord(record []byte) *Location {
+func (seeker *IPSeeker) getRecord(record []byte) *shared.Location {
 	offset := int(binary.LittleEndian.Uint32(padding(record[4:7], 4)))
 	length := seeker.getRecordLength(record)
 	return makeLocation(string(seeker.records[offset : offset+length]))

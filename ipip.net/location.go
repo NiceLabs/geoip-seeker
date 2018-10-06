@@ -1,68 +1,31 @@
 package ipip_net
 
 import (
-	"net"
 	"strings"
+
+	"github.com/NiceLabs/geoip-seeker/shared"
 )
 
-type Location struct {
-	IP            net.IP `json:"ip"`
-	BeginIP       net.IP `json:"begin_ip"`
-	EndIP         net.IP `json:"end_ip"`
-	Country       string `json:"country"`
-	Province      string `json:"province"`
-	City          string `json:"city"`
-	Unit          string `json:"unit"`
-	ISP           string `json:"isp"`
-	Longitude     string `json:"longitude"`
-	Latitude      string `json:"latitude"`
-	TimeZoneCode  string `json:"time_zone_code"`
-	TimeZoneUTC   string `json:"time_zone_utc"`
-	GB2260Code    string `json:"gb2260_code"`
-	CallingCode   string `json:"calling_code"`
-	ISO3166Code   string `json:"iso3166_code"`
-	ContinentCode string `json:"continent_code"`
-}
+func makeLocation(data string) *shared.Location {
+	if len(data) == 0 {
+		return nil
+	}
 
-func (location *Location) StringDAT() string {
-	fields := []string{
-		location.Country,
-		location.Province,
-		location.City,
-		location.Unit,
-	}
-	for index := range fields {
-		if fields[index] == "" {
-			fields[index] = "N/A"
-		}
-	}
-	return strings.Join(fields, "\t")
-}
+	location := new(shared.Location)
 
-func (location *Location) StringDATX() string {
-	fields := []string{
-		location.Country,
-		location.Province,
-		location.City,
-		location.Unit,
-		location.ISP,
-		location.Longitude,
-		location.Latitude,
-		location.TimeZoneCode,
-		location.TimeZoneUTC,
-		location.GB2260Code,
-		location.CallingCode,
-		location.ISO3166Code,
-		location.ContinentCode,
+	mapping := []*string{
+		&location.CountryName, &location.RegionName, &location.CityName,
+		&location.OwnerDomain, &location.ISPDomain, &location.Longitude,
+		&location.Latitude, &location.TimeZone, &location.UTCOffset,
+		&location.ChinaAdminCode, &location.IDDCode, &location.CountryCode,
+		&location.ContinentCode, &location.IDC, &location.BaseStation,
+		&location.CountryCode3, &location.EuropeanUnion, &location.CurrencyCode,
+		&location.CurrencyName, &location.AnyCast,
 	}
-	for index := range fields {
-		if fields[index] == "" {
-			fields[index] = "N/A"
-		}
-	}
-	return strings.Join(fields, "\t")
-}
 
-func (location *Location) String() string {
-	return location.StringDATX()
+	for index, field := range strings.Split(data, "\t") {
+		*mapping[index] = field
+	}
+
+	return location
 }

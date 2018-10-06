@@ -2,6 +2,7 @@
 
 # Supported
 
-- [x] CZ88.NET QQWry
-- [x] IPIP.NET DAT
-- [x] IPIP.NET DATX
+- [x] [CZ88.NET QQWry](qqwry)
+- [x] [IPIP.NET DAT](ipip.net)
+- [x] [IPIP.NET DATX](ipip.net)
+- [x] [IPIP.NET IPDB](ipdb)

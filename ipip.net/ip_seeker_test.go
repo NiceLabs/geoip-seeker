@@ -9,18 +9,18 @@ import (
 var seeker *IPSeeker
 
 func init() {
-	data, _ := ioutil.ReadFile("../../assets/data/17monipdb.dat")
-	seeker, _ = New(data, ModeDAT)
+	data, _ := ioutil.ReadFile("../testdata/17monipdb.datx")
+	seeker, _ = New(data, ModeDATX)
 }
 
 func BenchmarkIPSeeker_LookupByIP(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		seeker.LookupByIP(net.IP{103, 57, 164, 0})
+		_, _ = seeker.LookupByIP(net.IP{103, 57, 164, 0})
 	}
 }
 
 func BenchmarkIPSeeker_LookupByIndex(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		seeker.LookupByIndex(0)
+		_, _ = seeker.LookupByIndex(0)
 	}
 }

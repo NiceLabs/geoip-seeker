@@ -11,37 +11,37 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"strings"
 
-	"github.com/xtomcom/geoip-seeker/qqway"
+	"github.com/NiceLabs/geoip-seeker/qqwry"
+
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
 )
 
 func main() {
-	data, _ := ioutil.ReadFile(qqwry)
-	seeker, _ := qqway.New(data)
-	location, _ := seeker.LookupByIP(net.ParseIP("103.57.164.0"))
+	data, _ := ioutil.ReadFile("testdata/qqwry.dat")
+	seeker, _ := qqwry.New(data)
 
-	fmt.Println("String()\t\t:", gbkToUTF8([]byte(location.String())))
-	fmt.Println()
-	fmt.Println("IP Range\t\t:", location.BeginIP, "-", location.EndIP)
-	fmt.Println("Country\t\t\t:", gbkToUTF8(location.Country))
-	fmt.Println("Area\t\t\t:", gbkToUTF8(location.Area))
-	fmt.Println()
-	fmt.Println("QQWay RecordCount\t:", seeker.RecordCount())
-	fmt.Println("QQWay Version\t\t:", gbkToUTF8(seeker.Version()))
+	location, _ := seeker.LookupByIP(net.ParseIP("103.57.164.0"))
+	location.CountryName = convertGBKToUTF8(location.CountryName)
+	location.RegionName = convertGBKToUTF8(location.RegionName)
+
+	encoded, _ := json.MarshalIndent(location, "", "  ")
+
+	fmt.Println(string(encoded))
 }
 
-func gbkToUTF8(value string) string {
-	reader := transform.NewReader(strings.NewReader(value), simplifiedchinese.GBK.NewDecoder())
-	data, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return ""
-	}
+func convertGBKToUTF8(value string) string {
+	reader := transform.NewReader(
+		strings.NewReader(value),
+		simplifiedchinese.GBK.NewDecoder(),
+	)
+	data, _ := ioutil.ReadAll(reader)
 	return string(data)
 }
 ```
