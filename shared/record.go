@@ -45,20 +45,17 @@ type Record struct {
 	AnyCast       string `json:",omitempty"`
 }
 
-func (record *Record) String() string {
-	fields := []string{
-		record.CountryName, record.RegionName, record.CityName,
-		record.OwnerDomain, record.ISPDomain, record.Longitude,
-		record.Latitude, record.TimeZone, record.UTCOffset,
-		record.GB2260Code, record.IDDCode, record.ISO3166Alpha2Code,
-		record.ContinentCode, record.IDC, record.BaseStation,
-		record.ISO3166Alpha3Code, record.EuropeanUnion, record.CurrencyCode,
-		record.CurrencyName, record.AnyCast,
+func (r *Record) String() string {
+	values := []string{
+		r.CountryName,
+		r.RegionName,
+		r.CityName,
+		r.ISO3166Alpha2Code,
 	}
-	for index := range fields {
-		if fields[index] == "" {
-			fields[index] = "N/A"
+	for index := range values {
+		if values[index] == "" {
+			values[index] = "N/A"
 		}
 	}
-	return strings.Join(fields, "\t")
+	return strings.Join(values, "\t")
 }
