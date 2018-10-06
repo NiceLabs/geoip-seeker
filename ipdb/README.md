@@ -1,4 +1,4 @@
-# QQWay ip database seeker
+# IPIP-IPDB ip database seeker
 
 ## Notes
 

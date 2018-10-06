@@ -1,4 +1,4 @@
-# IPIP.Net ip database seeker
+# IPIP-DAT/DATX ip database seeker
 
 ## Notes
 
