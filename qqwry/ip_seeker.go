@@ -163,7 +163,7 @@ func (seeker *IPSeeker) readRecord(index int, onlyOne bool) (country, area strin
 	}
 	offset := index + 3
 	record := int(binary.LittleEndian.Uint32(padding(seeker.data[index:offset], 4)))
-	country, area = seeker.readRecord(record, true)
+	country, area = seeker.readRecord(record, false)
 	if !onlyOne && mode == redirectMode2 {
 		area, _ = seeker.readRecord(offset, true)
 	}

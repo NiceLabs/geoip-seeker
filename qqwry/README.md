@@ -28,8 +28,8 @@ func main() {
 	seeker, _ := qqwry.New(data)
 
 	record, _ := seeker.LookupByIP(net.ParseIP("114.114.114.114"))
-	record.CountryName = gbkToUTF8(record.CountryName)
-	record.RegionName = gbkToUTF8(record.RegionName)
+	toUTF8(&record.CountryName)
+	toUTF8(&record.RegionName)
 
 	encodedRecord, _ := json.MarshalIndent(record, "", "  ")
 
@@ -47,13 +47,13 @@ func main() {
 	// }
 }
 
-func gbkToUTF8(value string) string {
+func toUTF8(value *string) {
 	reader := transform.NewReader(
-		strings.NewReader(value),
+		strings.NewReader(*value),
 		simplifiedchinese.GBK.NewDecoder(),
 	)
 	data, _ := ioutil.ReadAll(reader)
-	return string(data)
+	*value = string(data)
 }
 ```
 
