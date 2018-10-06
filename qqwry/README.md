@@ -59,5 +59,5 @@ func gbkToUTF8(value string) string {
 
 # References
 
-see https://web.archive.org/web/20140423114336/http://lumaqq.linuxsir.org/article/qqwry_format_detail.html
-see http://sewm.pku.edu.cn/src/other/qqwry/qqwry_format_detail.pdf
+1. https://web.archive.org/web/20140423114336/http://lumaqq.linuxsir.org/article/qqwry_format_detail.html
+2. http://sewm.pku.edu.cn/src/other/qqwry/qqwry_format_detail.pdf

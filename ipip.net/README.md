@@ -43,5 +43,7 @@ func main() {
 
 # References
 
-see https://ipip.net
-see https://github.com/Moowei/ip-seeker
+1. https://ipip.net
+2. https://github.com/Moowei/ip-seeker
+3. https://github.com/larryli/ipv4
+

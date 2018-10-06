@@ -43,4 +43,6 @@ func main() {
 
 # References
 
-see https://ipip.net
+1. https://ipip.net
+2. https://github.com/larryli/ipv4
+
