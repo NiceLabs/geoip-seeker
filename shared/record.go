@@ -33,14 +33,16 @@ type Record struct {
 	ISO3166Alpha2Code string `json:",omitempty"`
 	ISO3166Alpha3Code string `json:",omitempty"`
 	ContinentCode     string `json:",omitempty"`
+	// Currency
+	//   CurrencyCode = ISO 4217
+	CurrencyCode string `json:",omitempty"`
+	CurrencyName string `json:",omitempty"`
 	// Service
-	IDC           string `json:",omitempty"`
-	BaseStation   string `json:",omitempty"`
+	IDC         string `json:",omitempty"` // IDC | VPN
+	BaseStation string `json:",omitempty"` // WiFi | BS (Base Station)
+	// Other
 	EuropeanUnion string `json:",omitempty"`
-	CurrencyCode  string `json:",omitempty"`
-	CurrencyName  string `json:",omitempty"`
-	// BGP
-	AnyCast string `json:",omitempty"`
+	AnyCast       string `json:",omitempty"`
 }
 
 func (record *Record) String() string {
