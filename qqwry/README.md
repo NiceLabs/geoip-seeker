@@ -37,7 +37,7 @@ func main() {
 	fmt.Println(seeker.String())
 	// QQWry 2018-10-05 470238 [IPv4]
 	fmt.Println(seeker.BuildTime())
-    // 2018-10-05 00:00:00 +0800 CST
+	// 2018-10-05 00:00:00 +0800 CST
 	fmt.Println(seeker.RecordCount())
 	// 470238
 	fmt.Println(string(encodedRecord))
