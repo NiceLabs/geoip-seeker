@@ -22,16 +22,17 @@ import (
 func main() {
 	data, _ := ioutil.ReadFile("testdata/ipiptest.ipdb")
 	seeker, _ := ipdb.New(data)
+
 	record, _ := seeker.LookupByIP(net.ParseIP("114.114.114.114"))
 
 	encodedRecord, _ := json.MarshalIndent(record, "", "  ")
 
+	fmt.Println(seeker.String())
+	// IPIP(IPDB) 2018-08-31 385083 [IPv4]
 	fmt.Println(seeker.RecordCount())
 	// 385083
 	fmt.Println(seeker.BuildTime())
-	// 2018-08-31 14:17:20 +0800 CST
-	fmt.Println(seeker.LanguageNames())
-	// [CN]
+	// 2018-10-05 00:00:00 +0800 CST
 	fmt.Println(string(encodedRecord))
 	// {
 	//   "IP": "114.114.114.114",
@@ -39,6 +40,18 @@ func main() {
 	//   "RegionName": "114DNS.COM"
 	// }
 }
+```
+
+## Benchmark
+
+```
+$ go test --bench .
+goos: linux
+goarch: amd64
+pkg: github.com/NiceLabs/geoip-seeker/ipdb
+BenchmarkIPSeeker_LookupByIP-8   	 2000000	       709 ns/op
+PASS
+ok  	github.com/NiceLabs/geoip-seeker/ipdb	2.083s
 ```
 
 # References

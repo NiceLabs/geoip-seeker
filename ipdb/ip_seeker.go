@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net"
 	"time"
 
@@ -74,12 +73,9 @@ func (seeker *IPSeeker) LanguageNames() []string {
 }
 
 func (seeker *IPSeeker) String() string {
-	return fmt.Sprintf(
-		"IPIP(IPDB) %s %d",
-		seeker.BuildTime().Format("2006-01-02"),
-		seeker.RecordCount(),
-	)
+	return shared.ShowLibraryInfo("IPIP(IPDB)", seeker)
 }
+
 func (seeker *IPSeeker) findNode(ip net.IP) (node int, err error) {
 	if ip := ip.To4(); ip != nil {
 		if !seeker.meta.IPv4Support() {

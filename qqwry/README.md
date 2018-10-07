@@ -4,6 +4,7 @@
 
 1. thread safe implementation
 2. no cache (cache to be managed by yourself)
+3. no encoding convert
 
 ## Example
 
@@ -33,10 +34,12 @@ func main() {
 
 	encodedRecord, _ := json.MarshalIndent(record, "", "  ")
 
-	fmt.Println(seeker.RecordCount())
-	// 470237
+    fmt.Println(seeker.String())
+	// QQWry 2018-10-05 470238 [IPv4]
 	fmt.Println(seeker.BuildTime())
-	// 2018-10-05 00:00:00 +0800 CST
+    // 2018-10-05 00:00:00 +0800 CST
+	fmt.Println(seeker.RecordCount())
+	// 470238
 	fmt.Println(string(encodedRecord))
 	// {
 	//   "IP": "114.114.114.114",
@@ -55,6 +58,19 @@ func fromGBKtoUTF8(value *string) {
 	data, _ := ioutil.ReadAll(reader)
 	*value = string(data)
 }
+```
+
+## Benchmark
+
+```
+$ go test --bench .
+goos: linux
+goarch: amd64
+pkg: github.com/NiceLabs/geoip-seeker/qqwry
+BenchmarkIPSeeker_LookupByIP-8      	 2000000	       859 ns/op
+BenchmarkIPSeeker_LookupByIndex-8   	10000000	       225 ns/op
+PASS
+ok  	github.com/NiceLabs/geoip-seeker/qqwry	5.065s
 ```
 
 # References

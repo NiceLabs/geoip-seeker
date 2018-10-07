@@ -2,7 +2,6 @@ package ipip_net
 
 import (
 	"encoding/binary"
-	"fmt"
 	"net"
 	"time"
 
@@ -119,15 +118,11 @@ func (seeker *IPSeeker) BuildTime() time.Time {
 }
 
 func (seeker *IPSeeker) RecordCount() int {
-	return len(seeker.recordIndex) / seeker.recordSize
+	return len(seeker.recordIndex)/seeker.recordSize - 1
 }
 
 func (seeker *IPSeeker) String() string {
-	return fmt.Sprintf(
-		"IPIP(DAT/DATX) %s %d",
-		seeker.BuildTime().Format("2006-01-02"),
-		seeker.RecordCount(),
-	)
+	return shared.ShowLibraryInfo("IPIP(DAT/DATX)", seeker)
 }
 
 func (seeker *IPSeeker) locate(address net.IP) *shared.Record {

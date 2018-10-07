@@ -139,11 +139,7 @@ func (seeker *IPSeeker) RecordCount() int {
 }
 
 func (seeker *IPSeeker) String() string {
-	return fmt.Sprintf(
-		"QQWry %s %d",
-		seeker.BuildTime().Format("2006-01-02"),
-		seeker.RecordCount(),
-	)
+	return shared.ShowLibraryInfo("QQWry", seeker)
 }
 
 func (seeker *IPSeeker) locateIndex(index int) (beginIP uint32, offset int) {

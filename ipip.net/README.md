@@ -26,10 +26,12 @@ func main() {
 
 	encodedRecord, _ := json.MarshalIndent(record, "", "  ")
 
-	fmt.Println(seeker.RecordCount())
-	// 251008
+	fmt.Println(seeker.String())
+	// IPIP(DAT/DATX) 2018-07-02 251008 [IPv4]
 	fmt.Println(seeker.BuildTime())
 	// 2018-07-02 01:00:00 +0800 CST
+	fmt.Println(seeker.RecordCount())
+	// 251008
 	fmt.Println(string(encodedRecord))
 	// {
 	//   "IP": "114.114.114.114",
@@ -39,6 +41,19 @@ func main() {
 	//   "RegionName": "114DNS.COM"
 	// }
 }
+```
+
+## Benchmark
+
+```
+$ go test --bench .
+goos: linux
+goarch: amd64
+pkg: github.com/NiceLabs/geoip-seeker/ipip.net
+BenchmarkIPSeeker_LookupByIP-8      	 2000000	       937 ns/op
+BenchmarkIPSeeker_LookupByIndex-8   	 3000000	       675 ns/op
+PASS
+ok  	github.com/NiceLabs/geoip-seeker/ipip.net	5.301s
 ```
 
 # References
