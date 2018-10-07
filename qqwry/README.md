@@ -34,7 +34,7 @@ func main() {
 
 	encodedRecord, _ := json.MarshalIndent(record, "", "  ")
 
-    fmt.Println(seeker.String())
+	fmt.Println(seeker.String())
 	// QQWry 2018-10-05 470238 [IPv4]
 	fmt.Println(seeker.BuildTime())
     // 2018-10-05 00:00:00 +0800 CST
