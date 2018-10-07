@@ -2,6 +2,7 @@ package ipip_net
 
 import (
 	"encoding/binary"
+	"fmt"
 	"net"
 	"time"
 
@@ -96,7 +97,7 @@ func (seeker *IPSeeker) LookupByIndex(index int) (record *shared.Record, err err
 	if index == 0 {
 		record.BeginIP = net.IPv4zero
 	} else {
-		record.BeginIP = int2ip(ip2int(seeker.locateRecord(index - 1)[:4]) + 1)
+		record.BeginIP = shared.Int2IP(shared.IP2Int(seeker.locateRecord(index - 1)[:4]) + 1)
 	}
 	record.EndIP = recordItem[:4]
 	return
@@ -114,22 +115,30 @@ func (seeker *IPSeeker) BuildTime() time.Time {
 	recordCount := int(seeker.RecordCount())
 	recordIndex := seeker.locateRecord(recordCount)
 	record := seeker.getRecord(recordIndex)
-	return resolvePublishDate(record.RegionName)
+	return resolveBuildTime(record.RegionName)
 }
 
-func (seeker *IPSeeker) RecordCount() uint64 {
-	return uint64(len(seeker.recordIndex)/seeker.recordSize) - 1
+func (seeker *IPSeeker) RecordCount() int {
+	return len(seeker.recordIndex) / seeker.recordSize
+}
+
+func (seeker *IPSeeker) String() string {
+	return fmt.Sprintf(
+		"IPIP(DAT/DATX) %s %d",
+		seeker.BuildTime().Format("2006-01-02"),
+		seeker.RecordCount(),
+	)
 }
 
 func (seeker *IPSeeker) locate(address net.IP) *shared.Record {
 	beginIndex := seeker.locateBeginIndex(address)
 	endIndex := int(seeker.RecordCount())
 
-	ip := ip2int(address)
+	ip := shared.IP2Int(address)
 	for beginIndex <= endIndex {
 		middleIndex := (beginIndex + endIndex) / 2
 		middleIP := seeker.locateRecord(middleIndex)[:4]
-		if ip2int(middleIP) < ip {
+		if shared.IP2Int(middleIP) < ip {
 			beginIndex = middleIndex + 1
 		} else {
 			endIndex = middleIndex - 1
@@ -150,7 +159,20 @@ func (seeker *IPSeeker) locateBeginIndex(address net.IP) int {
 }
 
 func (seeker *IPSeeker) getRecord(record []byte) *shared.Record {
-	offset := int(binary.LittleEndian.Uint32(padding(record[4:7], 4)))
+	offset := int(binary.LittleEndian.Uint32(shared.Padding(record[4:7], 4)))
 	length := seeker.getRecordLength(record)
 	return makeRecord(string(seeker.records[offset : offset+length]))
+}
+
+func resolveBuildTime(version string) time.Time {
+	layouts := []string{"2006010215", "20060102"}
+	zone := time.FixedZone("CST", +8*3600)
+	for _, layout := range layouts {
+		date, err := time.ParseInLocation(layout, version, zone)
+		if err != nil {
+			continue
+		}
+		return date
+	}
+	return time.Unix(0, 0)
 }

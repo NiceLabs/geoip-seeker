@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net"
 	"time"
 
@@ -56,8 +57,8 @@ func (seeker *IPSeeker) BuildTime() time.Time {
 	return seeker.meta.BuildDate()
 }
 
-func (seeker *IPSeeker) RecordCount() uint64 {
-	return uint64(seeker.meta.NodeCount)
+func (seeker *IPSeeker) RecordCount() int {
+	return seeker.meta.NodeCount
 }
 
 func (seeker *IPSeeker) LanguageCode(code string) (err error) {
@@ -72,6 +73,13 @@ func (seeker *IPSeeker) LanguageNames() []string {
 	return seeker.meta.LanguageNames()
 }
 
+func (seeker *IPSeeker) String() string {
+	return fmt.Sprintf(
+		"IPIP(IPDB) %s %d",
+		seeker.BuildTime().Format("2006-01-02"),
+		seeker.RecordCount(),
+	)
+}
 func (seeker *IPSeeker) findNode(ip net.IP) (node int, err error) {
 	if ip := ip.To4(); ip != nil {
 		if !seeker.meta.IPv4Support() {

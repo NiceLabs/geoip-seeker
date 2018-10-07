@@ -12,13 +12,11 @@ type MetaData struct {
 }
 
 func (m *MetaData) IPv4Support() bool {
-	version := uint16(0x01)
-	return (m.IPVersion & version) == version
+	return (m.IPVersion & 0x01) == 0x01
 }
 
 func (m *MetaData) IPv6Support() bool {
-	version := uint16(0x02)
-	return (m.IPVersion & version) == version
+	return (m.IPVersion & 0x02) == 0x02
 }
 
 func (m *MetaData) BuildDate() time.Time {

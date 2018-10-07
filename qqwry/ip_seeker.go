@@ -2,7 +2,6 @@ package qqwry
 
 import (
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"net"
 	"time"
@@ -42,7 +41,6 @@ func New(data []byte) (seeker *IPSeeker, err error) {
 
 	seeker.beginIP, _ = seeker.locateIndex(0)
 	seeker.endIP, _ = seeker.locateIndex(seeker.indexCount)
-
 	return
 }
 
@@ -53,7 +51,7 @@ func (seeker *IPSeeker) LookupByIP(address net.IP) (record *shared.Record, err e
 		return
 	}
 
-	ip := ip2int(address)
+	ip := shared.IP2Int(address)
 	beginIndex := 0
 	endIndex := seeker.indexCount
 
@@ -78,7 +76,7 @@ func (seeker *IPSeeker) LookupByIP(address net.IP) (record *shared.Record, err e
 	if err != nil {
 		return
 	}
-	if ip2int(record.BeginIP) > ip {
+	if shared.IP2Int(record.BeginIP) > ip {
 		err = shared.ErrDataNotExists
 		return
 	}
@@ -87,15 +85,15 @@ func (seeker *IPSeeker) LookupByIP(address net.IP) (record *shared.Record, err e
 }
 
 func (seeker *IPSeeker) LookupByIndex(index int) (*shared.Record, error) {
-	if index > seeker.indexCount && index >= 0 {
-		return nil, errors.New("index out of range")
+	if !(index > 0 || index <= seeker.indexCount) {
+		return nil, shared.ErrIndexOutOfRange
 	}
 
 	beginIP, offset := seeker.locateIndex(index)
 
 	record := new(shared.Record)
 	record.CountryName, record.RegionName = seeker.readRecord(offset+4, false)
-	record.BeginIP = int2ip(beginIP)
+	record.BeginIP = shared.Int2IP(beginIP)
 	record.EndIP = net.IP(seeker.data[offset : offset+4])
 
 	if record.CountryName == " CZ88.NET" {
@@ -136,14 +134,22 @@ func (seeker *IPSeeker) BuildTime() time.Time {
 	return time.Unix(0, 0)
 }
 
-func (seeker *IPSeeker) RecordCount() uint64 {
-	return uint64(seeker.indexCount - 1)
+func (seeker *IPSeeker) RecordCount() int {
+	return seeker.indexCount
+}
+
+func (seeker *IPSeeker) String() string {
+	return fmt.Sprintf(
+		"QQWry %s %d",
+		seeker.BuildTime().Format("2006-01-02"),
+		seeker.RecordCount(),
+	)
 }
 
 func (seeker *IPSeeker) locateIndex(index int) (beginIP uint32, offset int) {
 	indexOffset := seeker.firstIndex + (indexItemSize * index)
 
-	fields := padding(seeker.data[indexOffset:indexOffset+7], 8)
+	fields := shared.Padding(seeker.data[indexOffset:indexOffset+7], 8)
 
 	beginIP = binary.LittleEndian.Uint32(fields[:4])
 	offset = int(binary.LittleEndian.Uint32(fields[4:]))
@@ -162,10 +168,19 @@ func (seeker *IPSeeker) readRecord(index int, onlyOne bool) (country, area strin
 		return
 	}
 	offset := index + 3
-	record := int(binary.LittleEndian.Uint32(padding(seeker.data[index:offset], 4)))
+	record := int(binary.LittleEndian.Uint32(shared.Padding(seeker.data[index:offset], 4)))
 	country, area = seeker.readRecord(record, false)
 	if !onlyOne && mode == redirectMode2 {
 		area, _ = seeker.readRecord(offset, true)
 	}
 	return
+}
+
+func readCString(data []byte, offset int) string {
+	for index := offset; index < len(data); index++ {
+		if data[index] == 0 {
+			return string(data[offset:index])
+		}
+	}
+	return ""
 }

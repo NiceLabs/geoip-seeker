@@ -47,10 +47,10 @@ type Record struct {
 
 func (r *Record) String() string {
 	values := []string{
+		r.BeginIP.String(),
+		r.EndIP.String(),
 		r.CountryName,
 		r.RegionName,
-		r.CityName,
-		r.ISO3166Alpha2Code,
 	}
 	for index := range values {
 		if values[index] == "" {
