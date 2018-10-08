@@ -2,7 +2,7 @@ package ipdb
 
 import "time"
 
-type MetaData struct {
+type meta struct {
 	Build     int64          `json:"build"`
 	IPVersion uint16         `json:"ip_version"`
 	Languages map[string]int `json:"languages"`
@@ -11,20 +11,20 @@ type MetaData struct {
 	Fields    []string       `json:"fields"`
 }
 
-func (m *MetaData) IPv4Support() bool {
+func (m *meta) IPv4Support() bool {
 	return (m.IPVersion & 0x01) == 0x01
 }
 
-func (m *MetaData) IPv6Support() bool {
+func (m *meta) IPv6Support() bool {
 	return (m.IPVersion & 0x02) == 0x02
 }
 
-func (m *MetaData) BuildDate() time.Time {
+func (m *meta) BuildDate() time.Time {
 	zone := time.FixedZone("CST", +8*3600)
 	return time.Unix(m.Build, 0).In(zone)
 }
 
-func (m *MetaData) LanguageNames() (languages []string) {
+func (m *meta) LanguageNames() (languages []string) {
 	for k := range m.Languages {
 		languages = append(languages, k)
 	}

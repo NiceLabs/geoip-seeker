@@ -3,6 +3,6 @@ package shared
 import "io"
 
 type Builder interface {
-	AddRecord(location *Record)
+	AddRecord(record *Record)
 	io.WriterTo
 }

@@ -11,7 +11,7 @@ import (
 )
 
 type IPSeeker struct {
-	meta     *MetaData
+	meta     *meta
 	records  []byte
 	fileSize int
 	language int
@@ -144,18 +144,22 @@ func (seeker *IPSeeker) findV4Offset() (node int) {
 	return
 }
 
-func loadMetaData(data []byte) (meta *MetaData, err error) {
-	metaLength := int(binary.BigEndian.Uint32(data[:4]))
-	metaData := data[4 : 4+metaLength]
+func loadMetaData(data []byte) (parsed *meta, err error) {
+	length := int(binary.BigEndian.Uint32(data[:4]))
+	original := data[4 : 4+length]
 
-	meta = new(MetaData)
-	err = json.Unmarshal(metaData, meta)
-
-	if len(meta.Languages) == 0 || len(meta.Fields) == 0 {
-		return nil, shared.ErrMetaData
+	parsed = new(meta)
+	err = json.Unmarshal(original, parsed)
+	if err != nil {
+		return
 	}
-	if len(data) != (4 + metaLength + meta.TotalSize) {
-		return nil, shared.ErrFileSize
+	if len(parsed.Languages) == 0 || len(parsed.Fields) == 0 {
+		err = shared.ErrMetaData
+		return
+	}
+	if len(data) != (4 + length + parsed.TotalSize) {
+		err = shared.ErrFileSize
+		return
 	}
 	return
 }
