@@ -50,19 +50,6 @@ func DownloadUpdate() (*Update, error) {
 	return update, nil
 }
 
-func (update *Update) decodeQQWay(data []byte) []byte {
-	key := update.key
-	for index := 0; index < 0x200; index++ {
-		key *= 0x805
-		key += 1
-		key &= 0xFF
-		data[index] = byte(key ^ uint32(data[index]))
-	}
-	reader, _ := zlib.NewReader(bytes.NewReader(data))
-	data, _ = ioutil.ReadAll(reader)
-	return data
-}
-
 func (update *Update) BuildTime() time.Time {
 	year, month, day := versionToDate(
 		update.version + dateToVersion(1899, 12, 30),
@@ -76,7 +63,7 @@ func (update *Update) Size() uint32 {
 	return update.size
 }
 
-func (update *Update) DownloadDB() ([]byte, error) {
+func (update *Update) Download() ([]byte, error) {
 	resp, err := http.Get(updateQQWay)
 	if err != nil {
 		return nil, err
@@ -86,7 +73,22 @@ func (update *Update) DownloadDB() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return update.decodeQQWay(payload), nil
+	return update.decode(payload)
+}
+
+func (update *Update) decode(payload []byte) (data []byte, err error) {
+	key := update.key
+	for index := 0; index < 0x200; index++ {
+		key *= 0x805
+		key += 1
+		key &= 0xFF
+		payload[index] = byte(key ^ uint32(payload[index]))
+	}
+	reader, err := zlib.NewReader(bytes.NewReader(payload))
+	if err != nil {
+		return
+	}
+	return ioutil.ReadAll(reader)
 }
 
 // see https://github.com/shuax/LocateIP/blob/master/loci/cz_update.c#L23-L29
