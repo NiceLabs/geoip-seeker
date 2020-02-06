@@ -2,181 +2,98 @@ package qqwry
 
 import (
 	"encoding/binary"
-	"fmt"
 	"net"
-	"time"
 
-	"github.com/NiceLabs/geoip-seeker/shared"
+	. "github.com/NiceLabs/geoip-seeker/shared"
 )
 
-const (
-	indexItemSize = 7
-	redirectMode1 = 0x01
-	redirectMode2 = 0x02
-)
-
-type IPSeeker struct {
-	data []byte
-
-	firstIndex int
-	lastIndex  int
-
-	indexCount int
-
-	beginIP uint32
-	endIP   uint32
+type Seeker struct {
+	data            []byte
+	firstIP, lastIP uint32
+	indexes         []*index
 }
 
-func New(data []byte) (seeker *IPSeeker, err error) {
+func New(data []byte) (*Seeker, error) {
 	if len(data) == 0 {
-		err = shared.ErrFileSize
-		return
+		return nil, ErrFileSize
 	}
-	seeker = new(IPSeeker)
-	seeker.data = data
-
-	seeker.firstIndex = int(binary.LittleEndian.Uint32(data[0:4]))
-	seeker.lastIndex = int(binary.LittleEndian.Uint32(data[4:8]))
-	seeker.indexCount = (seeker.lastIndex - seeker.firstIndex) / indexItemSize
-
-	seeker.beginIP, _ = seeker.locateIndex(0)
-	seeker.endIP, _ = seeker.locateIndex(seeker.indexCount)
-	return
+	indexes := expandIndexes(data)
+	seeker := &Seeker{
+		data:    data,
+		indexes: indexes,
+		firstIP: indexes[0].ip,
+		lastIP:  indexes[len(indexes)-1].ip,
+	}
+	return seeker, nil
 }
 
-func (seeker *IPSeeker) LookupByIP(address net.IP) (record *shared.Record, err error) {
-	address = address.To4()
-	if address == nil {
-		err = shared.ErrInvalidIPv4
+func (s *Seeker) LookupByIP(address net.IP) (record *Record, err error) {
+	if address = address.To4(); address == nil {
+		err = ErrInvalidIPv4
 		return
 	}
-
-	ip := shared.IP2Int(address)
-	beginIndex := 0
-	endIndex := seeker.indexCount
-
-	if ip < seeker.beginIP {
-		err = shared.ErrDataNotExists
-		return
-	} else if ip >= seeker.endIP {
-		beginIndex = endIndex
+	ip := binary.BigEndian.Uint32(address)
+	head := uint64(0)
+	tail := s.RecordCount() - 1
+	if ip >= s.lastIP {
+		head = tail
 	} else {
-		for (beginIndex + 1) < endIndex {
-			middleIndex := (beginIndex + endIndex) / 2
-			middleIP, _ := seeker.locateIndex(middleIndex)
-			if middleIP <= ip {
-				beginIndex = middleIndex
+		for (head + 1) < tail {
+			index := (head + tail) / 2
+			if s.indexes[index].ip <= ip {
+				head = index
 			} else {
-				endIndex = middleIndex
+				tail = index
 			}
 		}
 	}
-
-	record, err = seeker.LookupByIndex(beginIndex)
-	if err != nil {
-		return
-	}
-	if shared.IP2Int(record.BeginIP) > ip {
-		err = shared.ErrDataNotExists
-		return
-	}
+	record = s.index(head)
 	record.IP = address
 	return
 }
 
-func (seeker *IPSeeker) LookupByIndex(index int) (*shared.Record, error) {
-	if !(index > 0 || index <= seeker.indexCount) {
-		return nil, shared.ErrIndexOutOfRange
-	}
-
-	beginIP, offset := seeker.locateIndex(index)
-
-	record := new(shared.Record)
-	record.CountryName, record.RegionName = seeker.readRecord(offset+4, false)
-	record.BeginIP = shared.Int2IP(beginIP)
-	record.EndIP = net.IP(seeker.data[offset : offset+4])
-
-	if record.CountryName == " CZ88.NET" {
-		record.CountryName = ""
-	}
-	if record.RegionName == " CZ88.NET" {
-		record.RegionName = ""
-	}
-
-	return record, nil
-}
-
-func (seeker *IPSeeker) IPv4Support() bool {
-	return true
-}
-
-func (seeker *IPSeeker) IPv6Support() bool {
-	return false
-}
-
-func (seeker *IPSeeker) BuildTime() time.Time {
-	record, _ := seeker.LookupByIndex(seeker.indexCount)
-
-	formats := []string{
-		"%d\xc4\xea%d\xd4\xc2%d\xc8\xd5",
-		"%d年%d月%d日",
-		"%4d%2d%2d",
-	}
-	location := time.FixedZone("CST", +8*3600)
-	for _, format := range formats {
-		var year, month, day int
-		_, err := fmt.Sscanf(record.RegionName, format, &year, &month, &day)
-		if err != nil {
-			continue
-		}
-		return time.Date(year, time.Month(month), day, 0, 0, 0, 0, location)
-	}
-	return time.Unix(0, 0)
-}
-
-func (seeker *IPSeeker) RecordCount() int {
-	return seeker.indexCount
-}
-
-func (seeker *IPSeeker) String() string {
-	return shared.ShowLibraryInfo("QQWry", seeker)
-}
-
-func (seeker *IPSeeker) locateIndex(index int) (beginIP uint32, offset int) {
-	indexOffset := seeker.firstIndex + (indexItemSize * index)
-
-	fields := shared.Padding(seeker.data[indexOffset:indexOffset+7], 8)
-
-	beginIP = binary.LittleEndian.Uint32(fields[:4])
-	offset = int(binary.LittleEndian.Uint32(fields[4:]))
+func (s *Seeker) LookupByIndex(index uint64) (record *Record, err error) {
+	record = s.index(index)
 	return
 }
 
-func (seeker *IPSeeker) readRecord(index int, onlyOne bool) (country, area string) {
-	mode := seeker.data[index]
-	index += 1
-	if mode != redirectMode1 && mode != redirectMode2 {
-		country = readCString(seeker.data, index-1)
-		if !onlyOne {
-			index += len(country)
-			area, _ = seeker.readRecord(index, true)
-		}
-		return
-	}
-	offset := index + 3
-	record := int(binary.LittleEndian.Uint32(shared.Padding(seeker.data[index:offset], 4)))
-	country, area = seeker.readRecord(record, false)
-	if !onlyOne && mode == redirectMode2 {
-		area, _ = seeker.readRecord(offset, true)
+func (s *Seeker) index(index uint64) (record *Record) {
+	item := s.indexes[index]
+	country, area := s.readRecord(item.offset)
+	record = &Record{
+		BeginIP:     item.beginIP,
+		EndIP:       item.endIP,
+		CountryName: country,
+		RegionName:  area,
 	}
 	return
 }
 
-func readCString(data []byte, offset int) string {
-	for index := offset; index < len(data); index++ {
-		if data[index] == 0 {
-			return string(data[offset:index])
-		}
+func (s *Seeker) readRecord(offset uint64) (country, area string) {
+	switch mode := s.data[offset]; mode {
+	case 1:
+		return s.readRecord(ReadUInt24(s.data, offset+1))
+	case 2:
+		country = s.readCString(ReadUInt24(s.data, offset+1))
+		area = s.readArea(offset + 4)
+	default:
+		country = s.readCString(offset)
+		area = s.readArea(offset + uint64(len(country)) + 1)
 	}
-	return ""
+	return
+}
+
+func (s *Seeker) readArea(offset uint64) string {
+	if s.data[offset] == 2 {
+		offset = ReadUInt24(s.data, offset+1)
+	}
+	return s.readCString(offset)
+}
+
+func (s *Seeker) readCString(offset uint64) string {
+	index := offset
+	for s.data[index] != 0 {
+		index++
+	}
+	return string(s.data[offset:index])
 }

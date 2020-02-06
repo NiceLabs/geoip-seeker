@@ -35,11 +35,11 @@ func main() {
 	encodedRecord, _ := json.MarshalIndent(record, "", "  ")
 
 	fmt.Println(seeker.String())
-	// QQWry 2018-10-05 470238 [IPv4]
+	// QQWry 2020-07-30 525793 [IPv4]
 	fmt.Println(seeker.BuildTime())
-	// 2018-10-05 00:00:00 +0800 CST
+	// 2020-07-30 00:00:00 +0800 CST
 	fmt.Println(seeker.RecordCount())
-	// 470238
+	// 525793
 	fmt.Println(string(encodedRecord))
 	// {
 	//   "IP": "114.114.114.114",
@@ -64,13 +64,12 @@ func fromGBKtoUTF8(value *string) {
 
 ```
 $ go test --bench .
-goos: linux
+goos: darwin
 goarch: amd64
 pkg: github.com/NiceLabs/geoip-seeker/qqwry
-BenchmarkIPSeeker_LookupByIP-8      	 2000000	       859 ns/op
-BenchmarkIPSeeker_LookupByIndex-8   	10000000	       225 ns/op
+BenchmarkIPSeeker_LookupByIP-12    	 2537727	       470 ns/op
 PASS
-ok  	github.com/NiceLabs/geoip-seeker/qqwry	5.065s
+ok  	github.com/NiceLabs/geoip-seeker/qqwry	2.325s
 ```
 
 # References

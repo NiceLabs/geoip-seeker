@@ -17,7 +17,7 @@ type Record struct {
 	// Owner
 	OwnerDomain string `json:",omitempty"`
 	ISPDomain   string `json:",omitempty"`
-	// Geocoding
+	// GeoCoding
 	Latitude  string `json:",omitempty"`
 	Longitude string `json:",omitempty"`
 	// Time zone

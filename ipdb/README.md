@@ -32,7 +32,7 @@ func main() {
 	fmt.Println(seeker.RecordCount())
 	// 385083
 	fmt.Println(seeker.BuildTime())
-	// 2018-10-05 00:00:00 +0800 CST
+	// 2018-08-31 00:00:00 +0800 CST
 	fmt.Println(string(encodedRecord))
 	// {
 	//   "IP": "114.114.114.114",
@@ -46,12 +46,12 @@ func main() {
 
 ```
 $ go test --bench .
-goos: linux
+goos: darwin
 goarch: amd64
 pkg: github.com/NiceLabs/geoip-seeker/ipdb
-BenchmarkIPSeeker_LookupByIP-8   	 2000000	       709 ns/op
+BenchmarkIPSeeker_LookupByIP-12    	 3452234	       354 ns/op
 PASS
-ok  	github.com/NiceLabs/geoip-seeker/ipdb	2.083s
+ok  	github.com/NiceLabs/geoip-seeker/ipdb	2.952s
 ```
 
 # References

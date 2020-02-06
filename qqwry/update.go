@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/NiceLabs/geoip-seeker/shared"
 )
 
 const (
@@ -15,69 +17,65 @@ const (
 	updateQQWay     = "http://update.cz88.net/ip/qqwry.rar"
 )
 
-type Update struct {
-	version uint32
-	size    uint32
-	key     uint32
+type updater struct {
+	client             *http.Client
+	version, size, key uint32
 }
 
-func DownloadUpdate() (*Update, error) {
-	resp, err := http.Get(updateCopyWrite)
+func DownloadUpdate(client *http.Client) (update shared.Update, err error) {
+	resp, err := client.Do(newRequest(updateCopyWrite))
 	if err != nil {
-		return nil, err
+		return
 	}
 	defer resp.Body.Close()
 	copywrite := new(struct {
-		Magic   [4]byte
-		Version uint32
-		_       uint32
-		Size    uint32
-		_       uint32
-		Key     uint32
-		Text    [128]byte
-		Link    [128]byte
+		Magic                    [4]byte
+		Version, _, Size, _, Key uint32
+		Text, Link               [128]byte
 	})
-	if err := binary.Read(resp.Body, binary.LittleEndian, copywrite); err != nil {
-		return nil, err
+	err = binary.Read(resp.Body, binary.LittleEndian, copywrite)
+	if err != nil {
+		return
 	}
 	if string(copywrite.Magic[:]) != "CZIP" {
-		return nil, errors.New("magic error")
+		err = errors.New("magic error")
+		return
 	}
-	update := new(Update)
-	update.version = copywrite.Version
-	update.size = copywrite.Size
-	update.key = copywrite.Key
-	return update, nil
+	update = &updater{
+		client:  client,
+		version: copywrite.Version,
+		size:    copywrite.Size,
+		key:     copywrite.Key,
+	}
+	return
 }
 
-func (update *Update) BuildTime() time.Time {
+func (u *updater) BuildTime() time.Time {
 	year, month, day := versionToDate(
-		update.version + dateToVersion(1899, 12, 30),
+		u.version + dateToVersion(1899, 12, 30),
 	)
 
-	location, _ := time.LoadLocation("Asia/Shanghai")
+	location := time.FixedZone("CST", +8*3600)
 	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, location)
 }
 
-func (update *Update) Size() uint32 {
-	return update.size
-}
+func (u *updater) Size() uint64 { return uint64(u.size) }
 
-func (update *Update) Download() ([]byte, error) {
-	resp, err := http.Get(updateQQWay)
+func (u *updater) Download() (payload []byte, err error) {
+	resp, err := u.client.Do(newRequest(updateQQWay))
 	if err != nil {
-		return nil, err
+		return
 	}
 	defer resp.Body.Close()
-	payload, err := ioutil.ReadAll(resp.Body)
+	payload, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return
 	}
-	return update.decode(payload)
+	return u.decode(payload)
 }
 
-func (update *Update) decode(payload []byte) (data []byte, err error) {
-	key := update.key
+func (u *updater) decode(payload []byte) (data []byte, err error) {
+	key := u.key
 	for index := 0; index < 0x200; index++ {
 		key *= 0x805
 		key += 1
@@ -89,6 +87,15 @@ func (update *Update) decode(payload []byte) (data []byte, err error) {
 		return
 	}
 	return ioutil.ReadAll(reader)
+}
+
+func newRequest(url string) *http.Request {
+	request, _ := http.NewRequest(http.MethodGet, url, nil)
+	request.Header = http.Header{
+		"Accept":     []string{"text/html, */*"},
+		"User-Agent": []string{"Mozilla/3.0 (compatible; Indy Library)"},
+	}
+	return request
 }
 
 // see https://github.com/shuax/LocateIP/blob/master/loci/cz_update.c#L23-L29
