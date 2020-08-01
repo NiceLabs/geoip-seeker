@@ -12,9 +12,9 @@ import (
 type Seeker struct {
 	meta     *meta
 	records  []byte
-	fileSize uint32
-	language uint16
-	v4Offset uint32
+	fileSize int
+	language uint8
+	v4Offset int
 }
 
 func New(data []byte) (*Seeker, error) {
@@ -27,7 +27,7 @@ func New(data []byte) (*Seeker, error) {
 	} else {
 		seeker.meta = meta
 	}
-	seeker.fileSize = uint32(len(data))
+	seeker.fileSize = len(data)
 	seeker.records = data[seeker.fileSize-seeker.meta.TotalSize:]
 	seeker.v4Offset = seeker.findV4Offset()
 	return seeker, nil
@@ -75,7 +75,7 @@ func (s *Seeker) String() string {
 	return ShowLibraryInfo("IPIP(IPDB)", s)
 }
 
-func (s *Seeker) findNode(ip net.IP) (node uint32, err error) {
+func (s *Seeker) findNode(ip net.IP) (node int, err error) {
 	if ip := ip.To4(); ip != nil {
 		if !s.IPv4Support() {
 			err = ErrNoSupportIPv4
@@ -94,7 +94,7 @@ func (s *Seeker) findNode(ip net.IP) (node uint32, err error) {
 	return
 }
 
-func (s *Seeker) searchNode(ip net.IP, bitCount int) (node uint32, err error) {
+func (s *Seeker) searchNode(ip net.IP, bitCount int) (node int, err error) {
 	node = 0
 	if bitCount == 32 {
 		node = s.v4Offset
@@ -104,7 +104,7 @@ func (s *Seeker) searchNode(ip net.IP, bitCount int) (node uint32, err error) {
 			break
 		}
 		index := ((0xFF & int(ip[i>>3])) >> uint(7-(i%8))) & 1
-		node = s.readNode(node, uint32(index))
+		node = s.readNode(node, index)
 	}
 	if node < s.meta.NodeCount {
 		err = ErrDataNotExists
@@ -112,19 +112,19 @@ func (s *Seeker) searchNode(ip net.IP, bitCount int) (node uint32, err error) {
 	return
 }
 
-func (s *Seeker) readNode(node, index uint32) uint32 {
+func (s *Seeker) readNode(node, index int) int {
 	offset := node*8 + index*4
-	return binary.BigEndian.Uint32(s.records[offset : offset+4])
+	return int(binary.BigEndian.Uint32(s.records[offset : offset+4]))
 }
 
-func (s *Seeker) resolveNode(node uint32) (record []byte, err error) {
+func (s *Seeker) resolveNode(node int) (record []byte, err error) {
 	resolved := node - s.meta.NodeCount + s.meta.NodeCount*8
 	if resolved >= s.fileSize {
 		err = ErrDatabaseError
 		return
 	}
-	size := uint32(binary.BigEndian.Uint16(s.records[resolved : resolved+2]))
-	if (resolved + 2 + size) > uint32(len(s.records)) {
+	size := int(binary.BigEndian.Uint16(s.records[resolved : resolved+2]))
+	if (resolved + 2 + size) > len(s.records) {
 		err = ErrDatabaseError
 		return
 	}
@@ -132,7 +132,7 @@ func (s *Seeker) resolveNode(node uint32) (record []byte, err error) {
 	return
 }
 
-func (s *Seeker) findV4Offset() (node uint32) {
+func (s *Seeker) findV4Offset() (node int) {
 	for i := 0; i < 96 && node < s.meta.NodeCount; i++ {
 		if i >= 80 {
 			node = s.readNode(node, 1)
@@ -144,7 +144,7 @@ func (s *Seeker) findV4Offset() (node uint32) {
 }
 
 func loadMetadata(data []byte) (parsed *meta, err error) {
-	length := binary.BigEndian.Uint32(data[:4])
+	length := int(binary.BigEndian.Uint32(data[:4]))
 	original := data[4 : 4+length]
 
 	parsed = new(meta)
@@ -156,7 +156,7 @@ func loadMetadata(data []byte) (parsed *meta, err error) {
 		err = ErrMetaData
 		return
 	}
-	if uint32(len(data)) != (4 + length + parsed.TotalSize) {
+	if len(data) != (4 + length + parsed.TotalSize) {
 		err = ErrFileSize
 		return
 	}

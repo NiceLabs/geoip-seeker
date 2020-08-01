@@ -6,10 +6,10 @@ import (
 	. "github.com/NiceLabs/geoip-seeker/shared"
 )
 
-func makeRecord(data string, language uint16, fields []string) (record *Record) {
+func makeRecord(data string, language uint8, fields []string) (record *Record) {
 	record = new(Record)
 	values := strings.Split(data, "\t")
-	values = values[language : language+uint16(len(fields))]
+	values = values[language : language+uint8(len(fields))]
 	mapping := map[string]*string{
 		"country_name":     &record.CountryName,
 		"region_name":      &record.RegionName,
