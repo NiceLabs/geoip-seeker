@@ -58,7 +58,7 @@ func (s *Seeker) BuildTime() time.Time {
 
 func (s *Seeker) LanguageCode(code string) (err error) {
 	if index, ok := s.meta.Languages[code]; ok {
-		s.language = uint16(index)
+		s.language = index
 		return
 	}
 	return ErrNoSupportLanguage

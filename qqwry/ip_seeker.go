@@ -47,22 +47,24 @@ func (s *Seeker) LookupByIP(address net.IP) (record *Record, err error) {
 			}
 		}
 	}
-	record = s.index(head)
+	record = s.index(s.indexes[head])
 	record.IP = address
 	return
 }
 
 func (s *Seeker) LookupByIndex(index uint64) (record *Record, err error) {
-	record = s.index(index)
+	record = s.index(s.indexes[index])
 	return
 }
 
-func (s *Seeker) index(index uint64) (record *Record) {
-	item := s.indexes[index]
-	country, area := s.readRecord(item.offset)
+func (s *Seeker) index(index *index) (record *Record) {
+	country, area := s.readRecord(index.offset)
+	if area == " CZ88.NET" {
+		area = ""
+	}
 	record = &Record{
-		BeginIP:     item.beginIP,
-		EndIP:       item.endIP,
+		BeginIP:     index.beginIP,
+		EndIP:       index.endIP,
 		CountryName: country,
 		RegionName:  area,
 	}

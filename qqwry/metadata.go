@@ -13,7 +13,7 @@ func (s *Seeker) RecordCount() uint64 { return uint64(len(s.indexes)) }
 func (s *Seeker) String() string      { return shared.ShowLibraryInfo("QQWry", s) }
 
 func (s *Seeker) BuildTime() time.Time {
-	record := s.index(s.RecordCount() - 1)
+	record := s.index(s.indexes[len(s.indexes)-1])
 	formats := []string{
 		"%d\xe5\xb9\xb4%d\xe6\x9c\x88%d\xe6\x97\xa5",
 		"%d\xc4\xea%d\xd4\xc2%d\xc8\xd5",
