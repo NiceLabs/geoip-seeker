@@ -32,7 +32,7 @@ func makeRecord(data string, language uint8, fields []string) (record *Record) {
 		"european_union":   &record.EuropeanUnion,
 		"anycast":          &record.AnyCast,
 	}
-	for index, end := language, language+uint16(len(fields)); index < end; index++ {
+	for index, end := language, language+uint8(len(fields)); index < end; index++ {
 		if input, ok := mapping[fields[index]]; ok {
 			*input = values[index]
 		}

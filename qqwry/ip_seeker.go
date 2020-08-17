@@ -52,11 +52,6 @@ func (s *Seeker) LookupByIP(address net.IP) (record *Record, err error) {
 	return
 }
 
-func (s *Seeker) LookupByIndex(index uint64) (record *Record, err error) {
-	record = s.index(s.indexes[index])
-	return
-}
-
 func (s *Seeker) index(index *index) (record *Record) {
 	country, area := s.readRecord(index.offset)
 	if area == " CZ88.NET" {

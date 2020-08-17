@@ -44,10 +44,6 @@ func (s *Seeker) LookupByIP(address net.IP) (record *Record, err error) {
 	return
 }
 
-func (s *Seeker) LookupByIndex(index uint64) (record *Record, err error) {
-	return
-}
-
 func (s *Seeker) IPv4Support() bool   { return (s.meta.IPVersion & 0x01) == 0x01 }
 func (s *Seeker) IPv6Support() bool   { return (s.meta.IPVersion & 0x02) == 0x02 }
 func (s *Seeker) RecordCount() uint64 { return uint64(s.meta.NodeCount) }
