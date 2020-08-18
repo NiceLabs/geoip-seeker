@@ -4,47 +4,37 @@ import (
 	"encoding/binary"
 	"net"
 
-	. "github.com/NiceLabs/geoip-seeker/shared"
+	"github.com/NiceLabs/geoip-seeker/shared"
 )
 
 type Seeker struct {
-	data            []byte
-	firstIP, lastIP uint32
-	indexes         []*index
+	data    []byte
+	indexes []*index
 }
 
 func New(data []byte) (*Seeker, error) {
 	if len(data) == 0 {
-		return nil, ErrFileSize
+		return nil, shared.ErrFileSize
 	}
-	indexes := expandIndexes(data)
-	seeker := &Seeker{
-		data:    data,
-		indexes: indexes,
-		firstIP: indexes[0].ip,
-		lastIP:  indexes[len(indexes)-1].ip,
-	}
+	seeker := &Seeker{data: data}
+	seeker.expandIndexes()
 	return seeker, nil
 }
 
-func (s *Seeker) LookupByIP(address net.IP) (record *Record, err error) {
+func (s *Seeker) LookupByIP(address net.IP) (record *shared.Record, err error) {
 	if address = address.To4(); address == nil {
-		err = ErrInvalidIPv4
+		err = shared.ErrInvalidIPv4
 		return
 	}
-	ip := binary.BigEndian.Uint32(address)
-	head := uint64(0)
-	tail := s.RecordCount() - 1
-	if ip >= s.lastIP {
-		head = tail
-	} else {
-		for (head + 1) < tail {
-			index := (head + tail) / 2
-			if s.indexes[index].ip <= ip {
-				head = index
-			} else {
-				tail = index
-			}
+	ip := uint(binary.BigEndian.Uint32(address))
+	head := 0
+	tail := len(s.indexes) - 1
+	for (head + 1) < tail {
+		index := (head + tail) / 2
+		if s.indexes[index].ip <= ip {
+			head = index
+		} else {
+			tail = index
 		}
 	}
 	record = s.index(s.indexes[head])
@@ -52,42 +42,41 @@ func (s *Seeker) LookupByIP(address net.IP) (record *Record, err error) {
 	return
 }
 
-func (s *Seeker) index(index *index) (record *Record) {
+func (s *Seeker) index(index *index) *shared.Record {
 	country, area := s.readRecord(index.offset)
 	if area == " CZ88.NET" {
 		area = ""
 	}
-	record = &Record{
-		BeginIP:     index.beginIP,
-		EndIP:       index.endIP,
+	return &shared.Record{
+		BeginIP:     index.begin,
+		EndIP:       index.end,
 		CountryName: country,
 		RegionName:  area,
 	}
-	return
 }
 
-func (s *Seeker) readRecord(offset uint64) (country, area string) {
+func (s *Seeker) readRecord(offset uint) (country, area string) {
 	switch mode := s.data[offset]; mode {
 	case 1:
-		return s.readRecord(ReadUInt24(s.data, offset+1))
+		return s.readRecord(s.readUInt24LE(offset + 1))
 	case 2:
-		country = s.readCString(ReadUInt24(s.data, offset+1))
+		country = s.readCString(s.readUInt24LE(offset + 1))
 		area = s.readArea(offset + 4)
 	default:
 		country = s.readCString(offset)
-		area = s.readArea(offset + uint64(len(country)) + 1)
+		area = s.readArea(offset + 1 + uint(len(country)))
 	}
 	return
 }
 
-func (s *Seeker) readArea(offset uint64) string {
+func (s *Seeker) readArea(offset uint) string {
 	if s.data[offset] == 2 {
-		offset = ReadUInt24(s.data, offset+1)
+		offset = s.readUInt24LE(offset + 1)
 	}
 	return s.readCString(offset)
 }
 
-func (s *Seeker) readCString(offset uint64) string {
+func (s *Seeker) readCString(offset uint) string {
 	index := offset
 	for s.data[index] != 0 {
 		index++

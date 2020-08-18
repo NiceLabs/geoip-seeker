@@ -5,10 +5,6 @@ import (
 	"strings"
 )
 
-func ReadUInt24(b []byte, offset uint64) uint64 {
-	return uint64(b[offset]) | uint64(b[offset+1])<<8 | uint64(b[offset+2])<<16
-}
-
 func ShowLibraryInfo(name string, seeker IPSeeker) string {
 	items := []string{
 		name,
