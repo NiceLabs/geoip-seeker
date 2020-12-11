@@ -1,5 +1,7 @@
 # GeoIP Seeker
 
+> WARNING: due to **IPIP.NET** acquired **CZ88.NET**, this library ends maintenance.
+
 # Supported
 
 - [x] [CZ88.NET/QQWry](qqwry)
